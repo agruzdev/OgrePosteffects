@@ -1,0 +1,62 @@
+cmake_minimum_required(VERSION 2.6)
+
+project(OgrePosteffects)
+
+#OGRE
+set(OGRE_ROOT "$ENV{OGRE_HOME}" CACHE FILEPATH "Path to ogre root folder")
+set(OGRE_BUILD "${OGRE_ROOT}/build" CACHE FILEPATH "Path to ogre build folder")
+set(OGRE_INCLUDE_DIR "${OGRE_ROOT}/OgreMain/include" CACHE FILEPATH "Path to ogre includes")
+set(OGRE_LIBS_DIR "${OGRE_BUILD}/lib" CACHE FILEPATH "Path to odre libs")
+set(OGRE_BIN_DIR "${OGRE_BUILD}/bin" CACHE FILEPATH "Path to odre dlls")
+set(OGRE_BIN_DIR_REL "${OGRE_BIN_DIR}/release")
+set(OGRE_BIN_DIR_DBG "${OGRE_BIN_DIR}/debug")
+
+include_directories(${OGRE_INCLUDE_DIR})
+include_directories("${OGRE_BUILD}/include")
+include_directories("${OGRE_ROOT}/Samples/Common/include")
+include_directories("${OGRE_ROOT}/Components/Overlay/include")
+include_directories("${OGRE_ROOT}/Components/Volume/include")
+include_directories("${OGRE_ROOT}/Components/RTShaderSystem/include")
+
+#Dependencies
+set(DEPENDS_ROOT "${OGRE_ROOT}/Dependencies")
+include_directories("${DEPENDS_ROOT}/include")
+include_directories("${DEPENDS_ROOT}/include/OIS")
+
+
+# Find Boost
+set(Boost_USE_STATIC_LIBS TRUE)
+set(Boost_ADDITIONAL_VERSIONS "1.44" "1.44.0" "1.42" "1.42.0" "1.41.0" "1.41" "1.40.0" "1.40" "1.39.0" "1.39" "1.38.0" "1.38" "1.37.0" "1.37" )
+set(BOOST_LIBRARYDIR $ENV{BOOST_ROOT}/lib)
+
+# Components that need linking (NB does not include header-only components like bind)
+set(OGRE_BOOST_COMPONENTS thread date_time system atomic chrono)
+find_package(Boost COMPONENTS ${OGRE_BOOST_COMPONENTS} REQUIRED)
+if (NOT Boost_FOUND)
+    # Try again with the other type of libs
+    set(Boost_USE_STATIC_LIBS NOT ${Boost_USE_STATIC_LIBS})
+    find_package(Boost COMPONENTS ${OGRE_BOOST_COMPONENTS} REQUIRED)
+endif()
+
+# Set up referencing of Boost
+include_directories(${Boost_INCLUDE_DIR})
+add_definitions(-DBOOST_ALL_NO_LIB)
+
+
+file(GLOB_RECURSE all_sources src/*.cpp src/*.h)
+
+add_definitions(-DDATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data")
+ 
+add_executable(OgrePosteffects WIN32 ${all_sources})
+
+target_link_libraries(OgrePosteffects ${Boost_LIBRARIES})
+
+target_link_libraries(OgrePosteffects debug ${DEPENDS_ROOT}/lib/OIS_d.lib)
+target_link_libraries(OgrePosteffects optimized  ${DEPENDS_ROOT}/lib/OIS.lib)
+ 
+target_link_libraries(OgrePosteffects debug ${OGRE_LIBS_DIR}/Debug/OgreMain_d.lib)
+target_link_libraries(OgrePosteffects debug ${OGRE_LIBS_DIR}/Debug/OgreOverlay_d.lib)
+
+target_link_libraries(OgrePosteffects optimized ${OGRE_LIBS_DIR}/Release/OgreMain.lib)
+target_link_libraries(OgrePosteffects optimized ${OGRE_LIBS_DIR}/Release/OgreOverlay.lib)
+

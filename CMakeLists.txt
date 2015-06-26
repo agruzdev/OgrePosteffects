@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 2.6)
 
 project(OgrePosteffects)
 
+set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+
 #OGRE
 set(OGRE_ROOT "$ENV{OGRE_HOME}" CACHE FILEPATH "Path to ogre root folder")
 set(OGRE_BUILD "${OGRE_ROOT}/build" CACHE FILEPATH "Path to ogre build folder")
@@ -60,3 +62,22 @@ target_link_libraries(OgrePosteffects debug ${OGRE_LIBS_DIR}/Debug/OgreOverlay_d
 target_link_libraries(OgrePosteffects optimized ${OGRE_LIBS_DIR}/Release/OgreMain.lib)
 target_link_libraries(OgrePosteffects optimized ${OGRE_LIBS_DIR}/Release/OgreOverlay.lib)
 
+if(WIN32)
+ 
+
+	install(FILES ${OGRE_BIN_DIR_REL}/OgreMain.dll
+		${OGRE_BIN_DIR_REL}/RenderSystem_GL.dll
+        ${OGRE_BIN_DIR_REL}/OgreOverlay.dll
+		${OGRE_BIN_DIR_REL}/OIS.dll
+		DESTINATION "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release/"
+		CONFIGURATIONS Release 
+	)
+ 
+	install(FILES ${OGRE_BIN_DIR_DBG}/OgreMain_d.dll
+		${OGRE_BIN_DIR_DBG}/RenderSystem_GL_d.dll
+        ${OGRE_BIN_DIR_DBG}/OgreOverlay_d.dll
+		${OGRE_BIN_DIR_DBG}/OIS_d.dll
+		DESTINATION "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug/"
+		CONFIGURATIONS Debug
+	)
+endif()

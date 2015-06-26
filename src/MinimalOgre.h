@@ -82,6 +82,9 @@ protected:
     // Ogre::WindowEventListener
     virtual void windowResized(Ogre::RenderWindow* rw);
     virtual void windowClosed(Ogre::RenderWindow* rw);
+
+private:
+	void SetupScene();
 };
  
 #endif // #ifndef __MinimalOgre_h_

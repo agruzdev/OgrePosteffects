@@ -37,9 +37,15 @@ This source file is part of the
 #include <SdkTrays.h>
 #include <SdkCameraMan.h>
 
-
+#include <OgreRenderTarget.h>
+#include <OgreRenderTargetListener.h>
+#include <OgreCompositorInstance.h>
  
-class MinimalOgre : public Ogre::FrameListener, public Ogre::WindowEventListener, public OIS::KeyListener, public OIS::MouseListener, OgreBites::SdkTrayListener
+class MinimalOgre : public Ogre::FrameListener, 
+	public Ogre::WindowEventListener, public OIS::KeyListener, 
+	public OIS::MouseListener, OgreBites::SdkTrayListener,
+	public Ogre::RenderTargetListener,
+	public Ogre::CompositorInstance::Listener
 {
 public:
     MinimalOgre(void);
@@ -83,7 +89,19 @@ protected:
     virtual void windowResized(Ogre::RenderWindow* rw);
     virtual void windowClosed(Ogre::RenderWindow* rw);
 
+	// Ogre::RenderTargetListener
+	virtual void preRenderTargetUpdate(const Ogre::RenderTargetEvent& evt);
+	virtual void postRenderTargetUpdate(const Ogre::RenderTargetEvent& evt);
+
 private:
+
+	static Ogre::RenderTarget* CreateRenderTarget(const Ogre::String & name, Ogre::Camera * camera, size_t width, size_t height);
+
+	Ogre::RenderTarget* mRenderTarget;
+	Ogre::Entity* mOgreHead;
+	Ogre::Entity* mBgTexturePlane;
+
+	void CreateMaterials();
 	void SetupScene();
 };
  

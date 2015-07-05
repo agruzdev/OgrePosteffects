@@ -16,7 +16,24 @@ This source file is part of the
 */
 #include "MinimalOgre.h"
 
- 
+#include <OgreMeshManager.h>
+#include <OgreHardwarePixelBuffer.h>
+#include <OgreRenderTexture.h>
+#include <OgreCompositorManager.h> 
+#include <OgreCompositionTargetPass.h>
+#include <OgreCompositionPass.h>
+#include <OgreCompositor.h>
+#include <OgreMaterialManager.h>
+#include <OgreMaterial.h>
+#include <OgreTechnique.h>
+#include <OgrePass.h>
+#include <OgreGpuProgramManager.h>
+#include <OgreGpuProgram.h>
+#include <OgreHighLevelGpuProgramManager.h>
+#include <OgreHighLevelGpuProgram.h>
+
+#include "Shaders.h"
+
 //-------------------------------------------------------------------------------------
 MinimalOgre::MinimalOgre(void)
     : mRoot(0),
@@ -139,6 +156,7 @@ bool MinimalOgre::go(void)
     Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
 //-------------------------------------------------------------------------------------
     // Create the scene
+    CreateMaterials();
 	SetupScene();
 //-------------------------------------------------------------------------------------
     //create FrameListener
@@ -380,12 +398,93 @@ void MinimalOgre::windowClosed(Ogre::RenderWindow* rw)
     }
 }
 
+Ogre::RenderTarget* MinimalOgre::CreateRenderTarget(const Ogre::String & name, Ogre::Camera* camera, size_t width, size_t height)
+{
+	Ogre::TexturePtr rtTexture = Ogre::TextureManager::getSingleton().createManual(name,
+		Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+		Ogre::TEX_TYPE_2D,
+		width, height, 0, 
+		Ogre::PF_BYTE_RGBA,
+		Ogre::TU_RENDERTARGET);
+	
+
+	Ogre::RenderTarget* renderTarget = rtTexture->getBuffer()->getRenderTarget();
+	renderTarget->addViewport(camera);
+	renderTarget->setAutoUpdated(true);
+
+	Ogre::Viewport* vp = renderTarget->getViewport(0);
+	vp->setClearEveryFrame(true);
+	vp->setOverlaysEnabled(true);
+	vp->setBackgroundColour(Ogre::ColourValue::Black);
+
+	return renderTarget;
+}
+
+void MinimalOgre::preRenderTargetUpdate(const Ogre::RenderTargetEvent& evt)
+{
+	//mOgreHead->setVisible(false);
+	//mBgTexturePlane->setVisible(true);
+}
+
+void MinimalOgre::postRenderTargetUpdate(const Ogre::RenderTargetEvent& evt)
+{
+	//mOgreHead->setVisible(true);
+	//mBgTexturePlane->setVisible(false);
+}
+
+
+void MinimalOgre::CreateMaterials()
+{
+	//Copy
+    {
+        Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().create(
+        "Material/Copy", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+
+        Ogre::Technique* technique = material->getTechnique(0);
+        Ogre::Pass* pass = technique->getPass(0);
+
+        {
+            auto vprogram = Ogre::HighLevelGpuProgramManager::getSingleton().createProgram("Shader/Copy/V",
+                Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, "glsl", Ogre::GPT_VERTEX_PROGRAM);
+            vprogram->setSource(Shader_Copy_V);
+            //auto vparams = vprogram->createParameters();
+            //vparams->setNamedAutoConstant("modelview_matrix", Ogre::GpuProgramParameters::ACT_WORLDVIEW_MATRIX);
+            //vparams->setNamedAutoConstant("projection_matrix", Ogre::GpuProgramParameters::ACT_PROJECTION_MATRIX);
+        }
+
+        {
+            auto fprogram = Ogre::HighLevelGpuProgramManager::getSingleton().createProgram("Shader/Copy/F",
+                Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, "glsl", Ogre::GPT_FRAGMENT_PROGRAM);
+            fprogram->setSource(Shader_Copy_F);
+
+            Ogre::Image image;
+            image.load("spheremap.png", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+            auto texture = Ogre::TextureManager::getSingleton().loadImage("Tex", 
+                Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, image);
+
+            auto unit0 = pass->createTextureUnitState("Tex");
+            unit0->setTextureAddressingMode(Ogre::TextureUnitState::TAM_CLAMP);
+            unit0->setTextureFiltering(Ogre::TFO_NONE);
+        }
+
+        pass->setVertexProgram("Shader/Copy/V");
+        pass->setFragmentProgram("Shader/Copy/F");
+
+        //material->setDepthCheckEnabled(false);
+        //material->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
+        //material->setCullingMode(Ogre::CULL_NONE);
+        //material->setColourWriteEnabled(true);
+	}
+
+
+}
+
 void MinimalOgre::SetupScene()
 {
-	Ogre::Entity* ogreHead = mSceneMgr->createEntity("Head", "ogrehead.mesh");
+	mOgreHead = mSceneMgr->createEntity("Head", "ogrehead.mesh");
 
 	Ogre::SceneNode* headNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
-	headNode->attachObject(ogreHead);
+	headNode->attachObject(mOgreHead);
 
 	// Set ambient light
 	mSceneMgr->setAmbientLight(Ogre::ColourValue(0.5, 0.5, 0.5));
@@ -393,8 +492,46 @@ void MinimalOgre::SetupScene()
 	// Create a light
 	Ogre::Light* l = mSceneMgr->createLight("MainLight");
 	l->setPosition(20, 80, 50);
+
+
+	//Create compositor
+	Ogre::CompositorPtr compositor = Ogre::CompositorManager::getSingleton().create("compositor", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+	Ogre::CompositionTechnique* technique = compositor->createTechnique();
+	
+	{
+		Ogre::CompositionTechnique::TextureDefinition* textureBg = technique->createTextureDefinition("RT");
+		textureBg->scope = Ogre::CompositionTechnique::TS_GLOBAL;
+		textureBg->width  = mWindow->getWidth(); //same as render window
+		textureBg->height = mWindow->getHeight(); //same as render window
+		textureBg->formatList.push_back(Ogre::PixelFormat::PF_R8G8B8A8);
+	}
+
+	{
+		Ogre::CompositionTargetPass* target = technique->createTargetPass();
+		//Ogre::CompositionPass* pass = target->createPass();
+		target->setInputMode(Ogre::CompositionTargetPass::IM_PREVIOUS);
+		target->setOutputName("RT");
+		//pass->setIdentifier(1);
+	}
+	{
+		Ogre::CompositionTargetPass* target = technique->getOutputTargetPass();
+		target->setInputMode(Ogre::CompositionTargetPass::IM_NONE);
+		Ogre::CompositionPass* pass = target->createPass();
+		pass->setInput(0, "RT");
+		pass->setMaterialName("Material/Copy");
+        //pass->setMaterialName("BaseWhite");
+		//pass->setInput(1);
+	}
+
+	Ogre::CompositorInstance* compInstance = Ogre::CompositorManager::getSingleton().addCompositor(mCamera->getViewport(), "compositor");
+	if (nullptr != compInstance)
+	{
+		compInstance->addListener(this);
+		compInstance->setEnabled(true);
+	}
+
 }
 
 
- 
+
  

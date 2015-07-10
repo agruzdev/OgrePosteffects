@@ -34,7 +34,14 @@ This source file is part of the
 
 #include <OgreStringInterface.h>
 
+#include <boost/algorithm/clamp.hpp>
+
 #include "Shaders.h"
+
+const Ogre::Real MinimalOgre::ROTATION_VELOCITY = static_cast<Ogre::Real>(100.0);
+const Ogre::Real MinimalOgre::ZOOM_VELOCITY = static_cast<Ogre::Real>(1000.0);
+const Ogre::Real MinimalOgre::HEAD_SCALE_MIN = static_cast<Ogre::Real>(0.1);
+const Ogre::Real MinimalOgre::HEAD_SCALE_MAX = static_cast<Ogre::Real>(2.0);
 
 //-------------------------------------------------------------------------------------
 MinimalOgre::MinimalOgre(void)
@@ -45,7 +52,7 @@ MinimalOgre::MinimalOgre(void)
     mResourcesCfg(""),
     mPluginsCfg(""),
     mTrayMgr(0),
-    mCameraMan(0),
+    //mCameraMan(0),
     mDetailsPanel(0),
     mCursorWasVisible(false),
     mShutDown(false),
@@ -59,7 +66,7 @@ MinimalOgre::MinimalOgre(void)
 MinimalOgre::~MinimalOgre(void)
 {
     if (mTrayMgr) delete mTrayMgr;
-    if (mCameraMan) delete mCameraMan;
+    //if (mCameraMan) delete mCameraMan;
 	if (mOverlaySystem) delete mOverlaySystem;
  
     //Remove ourself as a Window listener
@@ -137,7 +144,7 @@ bool MinimalOgre::go(void)
     mCamera->lookAt(Ogre::Vector3(0,0,-300));
     mCamera->setNearClipDistance(5);
  
-    mCameraMan = new OgreBites::SdkCameraMan(mCamera);   // create a default camera controller
+    //mCameraMan = new OgreBites::SdkCameraMan(mCamera);   // create a default camera controller
 //-------------------------------------------------------------------------------------
     // create viewports
     // Create one viewport, entire window
@@ -190,7 +197,7 @@ bool MinimalOgre::go(void)
     mTrayMgr = new OgreBites::SdkTrayManager("InterfaceName", mWindow, mInputContext, this);
     mTrayMgr->showFrameStats(OgreBites::TL_BOTTOMLEFT);
     mTrayMgr->showLogo(OgreBites::TL_BOTTOMRIGHT);
-    mTrayMgr->hideCursor();
+    //mTrayMgr->hideCursor();
  
     // create a params panel for displaying sample details
     Ogre::StringVector items;
@@ -234,7 +241,7 @@ bool MinimalOgre::frameRenderingQueued(const Ogre::FrameEvent& evt)
  
     if (!mTrayMgr->isDialogVisible())
     {
-        mCameraMan->frameRenderingQueued(evt);   // if dialog isn't up, then update the camera
+        //mCameraMan->frameRenderingQueued(evt);   // if dialog isn't up, then update the camera
         if (mDetailsPanel->isVisible())   // if details panel is visible, then update its contents
         {
             mDetailsPanel->setParamValue(0, Ogre::StringConverter::toString(mCamera->getDerivedPosition().x));
@@ -340,34 +347,57 @@ bool MinimalOgre::keyPressed( const OIS::KeyEvent &arg )
         mShutDown = true;
     }
  
-    mCameraMan->injectKeyDown(arg);
+    //mCameraMan->injectKeyDown(arg);
     return true;
 }
  
 bool MinimalOgre::keyReleased( const OIS::KeyEvent &arg )
 {
-    mCameraMan->injectKeyUp(arg);
+    //mCameraMan->injectKeyUp(arg);
     return true;
 }
  
-bool MinimalOgre::mouseMoved( const OIS::MouseEvent &arg )
+bool MinimalOgre::mouseMoved( const OIS::MouseEvent &evt )
 {
-    if (mTrayMgr->injectPointerMove(arg)) return true;
-    mCameraMan->injectPointerMove(arg);
+    if (mTrayMgr->injectPointerMove(evt)) return true;
+    //mCameraMan->injectPointerMove(arg);
+
+    Ogre::SceneNode* headNode = mOgreHead->getParentSceneNode();
+    if (nullptr != headNode)
+    {
+        if (true == evt.state.buttonDown(OIS::MouseButtonID::MB_Left))
+        {
+            Ogre::Quaternion rotOY, rotOX;
+            rotOY.FromAngleAxis(Ogre::Radian(evt.state.X.rel / ROTATION_VELOCITY), Ogre::Vector3::UNIT_Y);
+            rotOX.FromAngleAxis(Ogre::Radian(evt.state.Y.rel / ROTATION_VELOCITY), Ogre::Vector3::UNIT_X);
+            Ogre::Quaternion oldOrientation = headNode->getOrientation();
+            headNode->setOrientation(rotOY * rotOX * oldOrientation);
+        }
+        //The scroll wheel is actually considered mouse motion, it's the z component of the motion.
+        //http://www.ogre3d.org/forums/viewtopic.php?t=36681
+        if (0 != evt.state.Z.rel)
+        {
+            Ogre::Real scaleFactor = static_cast<Ogre::Real>(1) + evt.state.Z.rel / ZOOM_VELOCITY;
+            Ogre::Real oldScale = headNode->getScale().length();
+            scaleFactor = boost::algorithm::clamp(scaleFactor, HEAD_SCALE_MIN / oldScale, HEAD_SCALE_MAX / oldScale);
+            headNode->scale(scaleFactor * Ogre::Vector3::UNIT_SCALE);
+        }
+    }
+
     return true;
 }
  
 bool MinimalOgre::mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID id )
 {
 	if (mTrayMgr->injectPointerDown(arg, id)) return true;
-	mCameraMan->injectPointerDown(arg, id);
+	//mCameraMan->injectPointerDown(arg, id);
     return true;
 }
  
 bool MinimalOgre::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id )
 {
 	if (mTrayMgr->injectPointerUp(arg, id)) return true;
-	mCameraMan->injectPointerUp(arg, id);
+	//mCameraMan->injectPointerUp(arg, id);
     return true;
 }
  

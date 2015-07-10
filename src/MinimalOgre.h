@@ -53,6 +53,12 @@ public:
     virtual ~MinimalOgre(void);
     bool go(void);
 protected:
+
+    static const Ogre::Real ROTATION_VELOCITY;
+    static const Ogre::Real ZOOM_VELOCITY;
+    static const Ogre::Real HEAD_SCALE_MIN;
+    static const Ogre::Real HEAD_SCALE_MAX;
+
     Ogre::Root *mRoot;
     Ogre::Camera* mCamera;
     Ogre::SceneManager* mSceneMgr;
@@ -65,7 +71,7 @@ protected:
     // OgreBites
 	OgreBites::InputContext mInputContext;
     OgreBites::SdkTrayManager* mTrayMgr;
-    OgreBites::SdkCameraMan* mCameraMan;      // basic camera controller
+    //OgreBites::SdkCameraMan* mCameraMan;      // basic camera controller
     OgreBites::ParamsPanel* mDetailsPanel;    // sample details panel
     bool mCursorWasVisible;                   // was cursor visible before dialog appeared
     bool mShutDown;

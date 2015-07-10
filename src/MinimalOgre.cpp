@@ -522,11 +522,29 @@ void MinimalOgre::CreateMaterials()
                 fprogram->setParameter("target", "ps_3_0");
                 fprogram->setParameter("entry_point", "PS");
                 fprogram->load();
+
+                pass->createTextureUnitState();
             }
 
             pass->setVertexProgram("Shader/DX/Copy/V");
             pass->setFragmentProgram("Shader/DX/Copy/F");
         }
+        material->load();
+    }
+    //Background material
+    {
+        //load image
+        Ogre::Image bgImage;
+        bgImage.load("background.jpg", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+        Ogre::TexturePtr bgTexture = Ogre::TextureManager::getSingleton().loadImage("Texture/BG",
+            Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, bgImage);
+
+        Ogre::MaterialPtr bgMaterial = Ogre::MaterialManager::getSingleton().getByName("Material/Copy")->clone("Material/BG");
+        auto bgTexUnitState = bgMaterial->getBestTechnique()->getPass(0)->getTextureUnitState(0);
+        bgTexUnitState->setTexture(bgTexture);
+        bgTexUnitState->setTextureFiltering(Ogre::TFO_TRILINEAR);
+
+        bgMaterial->load();
 	}
 
 
@@ -549,25 +567,19 @@ void MinimalOgre::SetupScene()
 	Ogre::Light* l = mSceneMgr->createLight("MainLight");
 	l->setPosition(20, 80, 50);
 
+	Ogre::Plane bgPlane = Ogre::Plane(Ogre::Vector3(0.0f, 0.0f, 1.0f), Ogre::Vector3(0.0f, 0.0f, -100.0f));
+	Ogre::vector<Ogre::Vector4>::type intersection;
+	mCamera->forwardIntersect(bgPlane, &intersection);
+    size_t width  = 2 * intersection[0].x;
+	size_t height = 2 * intersection[0].y;
 
-	//Create an additional camera for rendering the background texture
-	//Ogre::Camera* bgCamera = mSceneMgr->createCamera("BgCamera");
-	//bgCamera->setPosition(0.0f, 0.0f, 100.0f);
-	//bgCamera->lookAt(0.0f, 0.0f, 0.0f);
+	Ogre::MeshPtr bgPlaneMesh = Ogre::MeshManager::getSingleton().createPlane("Mesh/BgPlane",
+		Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, bgPlane, width, height);
 
-	//Ogre::Plane bgPlane = Ogre::Plane(Ogre::Vector3(0.0f, 0.0f, 1.0f), Ogre::Vector3::ZERO);
-	//Ogre::vector<Ogre::Vector4>::type intersection;
-	//bgCamera->forwardIntersect(bgPlane, &intersection);
-	//size_t width = 2 * intersection[0].x;
-	//size_t height = 2 * intersection[0].y;
+	mBgTexturePlane = mSceneMgr->createEntity(bgPlaneMesh);
+    mBgTexturePlane->setMaterialName("Material/BG");
 
-	//Ogre::MeshPtr bgPlaneMesh = Ogre::MeshManager::getSingleton().createPlane("Mesh/BgPlane",
-	//	Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, bgPlane, width, height);
-
-	//mBgTexturePlane = mSceneMgr->createEntity(bgPlaneMesh);
-    //mBgTexturePlane->setMaterialName("Material/Copy");
-
-	//mSceneMgr->getRootSceneNode()->createChildSceneNode()->attachObject(mBgTexturePlane);
+	mSceneMgr->getRootSceneNode()->createChildSceneNode()->attachObject(mBgTexturePlane);
 
 	//Create RT
 	//mRenderTarget = CreateRenderTarget("RT", bgCamera, mWindow->getWidth(), mWindow->getHeight());

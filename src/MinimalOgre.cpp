@@ -32,6 +32,8 @@ This source file is part of the
 #include <OgreHighLevelGpuProgramManager.h>
 #include <OgreHighLevelGpuProgram.h>
 
+#include <OgreStringInterface.h>
+
 #include "Shaders.h"
 
 //-------------------------------------------------------------------------------------
@@ -440,40 +442,61 @@ void MinimalOgre::CreateMaterials()
         Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().create(
         "Material/Copy", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 
-        Ogre::Technique* technique = material->getTechnique(0);
-        Ogre::Pass* pass = technique->getPass(0);
-
         {
-            auto vprogram = Ogre::HighLevelGpuProgramManager::getSingleton().createProgram("Shader/Copy/V",
-                Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, "glsl", Ogre::GPT_VERTEX_PROGRAM);
-            vprogram->setSource(Shader_Copy_V);
-            //auto vparams = vprogram->createParameters();
-            //vparams->setNamedAutoConstant("modelview_matrix", Ogre::GpuProgramParameters::ACT_WORLDVIEW_MATRIX);
-            //vparams->setNamedAutoConstant("projection_matrix", Ogre::GpuProgramParameters::ACT_PROJECTION_MATRIX);
-        }
+            Ogre::Technique* techniqueGL = material->getTechnique(0);
+            Ogre::Pass* pass = techniqueGL->getPass(0);
 
+            {
+                auto vprogram = Ogre::HighLevelGpuProgramManager::getSingleton().createProgram("Shader/GL/Copy/V",
+                    Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, "glsl", Ogre::GPT_VERTEX_PROGRAM);
+                vprogram->setSource(Shader_GL_Copy_V);
+                //auto vparams = vprogram->createParameters();
+                //vparams->setNamedAutoConstant("modelviewproj", Ogre::GpuProgramParameters::ACT_WORLDVIEWPROJ_MATRIX);
+            }
+
+            {
+                auto fprogram = Ogre::HighLevelGpuProgramManager::getSingleton().createProgram("Shader/GL/Copy/F",
+                    Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, "glsl", Ogre::GPT_FRAGMENT_PROGRAM);
+                fprogram->setSource(Shader_GL_Copy_F);
+
+                auto unit0 = pass->createTextureUnitState();
+                unit0->setTextureAddressingMode(Ogre::TextureUnitState::TAM_CLAMP);
+                unit0->setTextureFiltering(Ogre::TFO_NONE);
+            }
+
+            pass->setVertexProgram("Shader/GL/Copy/V");
+            pass->setFragmentProgram("Shader/GL/Copy/F");
+        }
         {
-            auto fprogram = Ogre::HighLevelGpuProgramManager::getSingleton().createProgram("Shader/Copy/F",
-                Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, "glsl", Ogre::GPT_FRAGMENT_PROGRAM);
-            fprogram->setSource(Shader_Copy_F);
+            Ogre::Technique* techniqueDX = material->createTechnique();
+            Ogre::Pass* pass = techniqueDX->createPass();
 
-            Ogre::Image image;
-            image.load("spheremap.png", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-            auto texture = Ogre::TextureManager::getSingleton().loadImage("Tex", 
-                Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, image);
+            {
+                auto vprogram = Ogre::HighLevelGpuProgramManager::getSingleton().createProgram("Shader/DX/Copy/V",
+                    Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, "hlsl", Ogre::GPT_VERTEX_PROGRAM);
+                vprogram->setSource(Shader_DX_Copy_V);
+                vprogram->setParameter("target", "vs_3_0");
+                vprogram->setParameter("entry_point", "VS");
+                vprogram->load();
+                if (true == vprogram->isSupported())
+                {
+                    auto vparams = vprogram->createParameters();
+                    vparams->setNamedAutoConstant("ModelViewProj", Ogre::GpuProgramParameters::ACT_WORLDVIEWPROJ_MATRIX);
+                }
+            }
 
-            auto unit0 = pass->createTextureUnitState("Tex");
-            unit0->setTextureAddressingMode(Ogre::TextureUnitState::TAM_CLAMP);
-            unit0->setTextureFiltering(Ogre::TFO_NONE);
+            {
+                auto fprogram = Ogre::HighLevelGpuProgramManager::getSingleton().createProgram("Shader/DX/Copy/F",
+                    Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, "hlsl", Ogre::GPT_FRAGMENT_PROGRAM);
+                fprogram->setSource(Shader_DX_Copy_F);
+                fprogram->setParameter("target", "ps_3_0");
+                fprogram->setParameter("entry_point", "PS");
+                fprogram->load();
+            }
+
+            pass->setVertexProgram("Shader/DX/Copy/V");
+            pass->setFragmentProgram("Shader/DX/Copy/F");
         }
-
-        pass->setVertexProgram("Shader/Copy/V");
-        pass->setFragmentProgram("Shader/Copy/F");
-
-        //material->setDepthCheckEnabled(false);
-        //material->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
-        //material->setCullingMode(Ogre::CULL_NONE);
-        //material->setColourWriteEnabled(true);
 	}
 
 
@@ -482,9 +505,12 @@ void MinimalOgre::CreateMaterials()
 void MinimalOgre::SetupScene()
 {
 	mOgreHead = mSceneMgr->createEntity("Head", "ogrehead.mesh");
+    //mOgreHead = mSceneMgr->createEntity(Ogre::SceneManager::PT_CUBE);
+    //mOgreHead->setMaterialName("Material/Copy");
 
 	Ogre::SceneNode* headNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
 	headNode->attachObject(mOgreHead);
+    headNode->setScale(0.27f * Ogre::Vector3::UNIT_SCALE);
 
 	// Set ambient light
 	mSceneMgr->setAmbientLight(Ogre::ColourValue(0.5, 0.5, 0.5));
@@ -494,7 +520,32 @@ void MinimalOgre::SetupScene()
 	l->setPosition(20, 80, 50);
 
 
+	//Create an additional camera for rendering the background texture
+	//Ogre::Camera* bgCamera = mSceneMgr->createCamera("BgCamera");
+	//bgCamera->setPosition(0.0f, 0.0f, 100.0f);
+	//bgCamera->lookAt(0.0f, 0.0f, 0.0f);
+
+	//Ogre::Plane bgPlane = Ogre::Plane(Ogre::Vector3(0.0f, 0.0f, 1.0f), Ogre::Vector3::ZERO);
+	//Ogre::vector<Ogre::Vector4>::type intersection;
+	//bgCamera->forwardIntersect(bgPlane, &intersection);
+	//size_t width = 2 * intersection[0].x;
+	//size_t height = 2 * intersection[0].y;
+
+	//Ogre::MeshPtr bgPlaneMesh = Ogre::MeshManager::getSingleton().createPlane("Mesh/BgPlane",
+	//	Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, bgPlane, width, height);
+
+	//mBgTexturePlane = mSceneMgr->createEntity(bgPlaneMesh);
+    //mBgTexturePlane->setMaterialName("Material/Copy");
+
+	//mSceneMgr->getRootSceneNode()->createChildSceneNode()->attachObject(mBgTexturePlane);
+
+	//Create RT
+	//mRenderTarget = CreateRenderTarget("RT", bgCamera, mWindow->getWidth(), mWindow->getHeight());
+	//mRenderTarget->addListener(this);
+
+#if 1
 	//Create compositor
+
 	Ogre::CompositorPtr compositor = Ogre::CompositorManager::getSingleton().create("compositor", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 	Ogre::CompositionTechnique* technique = compositor->createTechnique();
 	
@@ -529,7 +580,7 @@ void MinimalOgre::SetupScene()
 		compInstance->addListener(this);
 		compInstance->setEnabled(true);
 	}
-
+#endif
 }
 
 

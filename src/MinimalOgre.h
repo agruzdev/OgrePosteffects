@@ -28,6 +28,7 @@ This source file is part of the
 #include <OgreWindowEventUtilities.h>
 #include <OgreTextureManager.h>
 #include <OgreMaterialManager.h>
+#include <OgreOverlay.h>
 
 #include <OISEvents.h>
 #include <OISInputManager.h>

@@ -67,7 +67,7 @@ if(WIN32)
 
 	install(FILES ${OGRE_BIN_DIR_REL}/OgreMain.dll
 		${OGRE_BIN_DIR_REL}/RenderSystem_GL.dll
-        ${OGRE_BIN_DIR_DBG}/RenderSystem_Direct3D9.dll
+        ${OGRE_BIN_DIR_REL}/RenderSystem_Direct3D9.dll
         ${OGRE_BIN_DIR_REL}/OgreOverlay.dll
 		${OGRE_BIN_DIR_REL}/OIS.dll
 		DESTINATION "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release/"

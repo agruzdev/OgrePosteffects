@@ -37,8 +37,6 @@ namespace
 
 class PostEffectNull : public PostEffect
 {
-    static const Ogre::String EFFECT_MATERIAL_NAME;
-
 public:
     PostEffectNull(const Ogre::String& name, size_t id):
         PostEffect(name, id)
@@ -52,7 +50,7 @@ public:
 
     virtual Ogre::String GetEffectMaterialName() const override
     {
-        return EFFECT_MATERIAL_NAME;
+        return "Material/PostEffect/" + GetUniquePostfix();
     }
 
     virtual bool DoInit(const Ogre::RenderWindow* window) override
@@ -60,37 +58,36 @@ public:
         (void)window;
 
         Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().create(
-            EFFECT_MATERIAL_NAME, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+            GetEffectMaterialName(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 
         {
             Ogre::Technique* techniqueGL = material->getTechnique(0);
             Ogre::Pass* pass = techniqueGL->getPass(0);
 
             {
-                auto vprogram = Ogre::HighLevelGpuProgramManager::getSingleton().createProgram("Shader/GL/Copy/V",
+                auto vprogram = Ogre::HighLevelGpuProgramManager::getSingleton().createProgram("Shader/GL/V/" + GetUniquePostfix(),
                     Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, "glsl", Ogre::GPT_VERTEX_PROGRAM);
                 vprogram->setSource(Shader_GL_Copy_V);
+
+                pass->setVertexProgram(vprogram->getName());
             }
 
             {
-                auto fprogram = Ogre::HighLevelGpuProgramManager::getSingleton().createProgram("Shader/GL/Copy/F",
+                auto fprogram = Ogre::HighLevelGpuProgramManager::getSingleton().createProgram("Shader/GL/F/" + GetUniquePostfix(),
                     Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, "glsl", Ogre::GPT_FRAGMENT_PROGRAM);
                 fprogram->setSource(Shader_GL_Copy_F);
 
                 auto unit0 = pass->createTextureUnitState();
                 unit0->setTextureAddressingMode(Ogre::TextureUnitState::TAM_CLAMP);
                 unit0->setTextureFiltering(Ogre::TFO_NONE);
-            }
 
-            pass->setVertexProgram("Shader/GL/Copy/V");
-            pass->setFragmentProgram("Shader/GL/Copy/F");
+                pass->setFragmentProgram(fprogram->getName());
+            }
         }
         material->load();
         return true;
     }
 };
-
-const Ogre::String PostEffectNull::EFFECT_MATERIAL_NAME = "Material/PostEffectNull";
 
 IMPLEMENT_REGISTRATION_FUNCTION(EffectNull)
 {

@@ -18,10 +18,6 @@ class PostEffect : public Ogre::StringInterface, public Ogre::CompositorInstance
     static const Ogre::String DICTIONARY_NAME;
     static const Ogre::String COMPOSITOR_NAME_PREFIX;
     //-------------------------------------------------------
-    
-    const Ogre::String mName; ///< Unique name of the post effect type
-    const size_t mId; ///< Unique number of the post effect instance
-
     bool mInited;
 
     Ogre::CompositorPtr mCompositor;
@@ -30,8 +26,6 @@ class PostEffect : public Ogre::StringInterface, public Ogre::CompositorInstance
 
     //Basic initialization; then calls DoCreateParametersDictionary()
     void CreateParametersDictionary();
-    //Helper method to generate unique names
-    Ogre::String GetUniquePostfix() const;
 
     PostEffect(const PostEffect&) = delete;
     PostEffect(const PostEffect&&) = delete;
@@ -40,6 +34,12 @@ class PostEffect : public Ogre::StringInterface, public Ogre::CompositorInstance
     //-------------------------------------------------------
 
 protected:
+    const Ogre::String mName; ///< Unique name of the post effect type
+    const size_t mId; ///< Unique number of the post effect instance
+
+    //Helper method to generate unique names
+    Ogre::String GetUniquePostfix() const;
+
     /**
      * Create and setup post effect compositor
      * @return true if the created compositor has any supported technique

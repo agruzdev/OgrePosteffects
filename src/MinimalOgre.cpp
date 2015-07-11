@@ -38,6 +38,9 @@ This source file is part of the
 
 #include "Shaders.h"
 
+#include "PostEffectManager.h"
+#include "PostEffect.h"
+
 const Ogre::Real MinimalOgre::ROTATION_VELOCITY = static_cast<Ogre::Real>(100.0);
 const Ogre::Real MinimalOgre::ZOOM_VELOCITY = static_cast<Ogre::Real>(1000.0);
 const Ogre::Real MinimalOgre::HEAD_SCALE_MIN = static_cast<Ogre::Real>(0.1);
@@ -586,6 +589,17 @@ void MinimalOgre::SetupScene()
 	//mRenderTarget->addListener(this);
 
 #if 1
+
+    //Strange OGRE singleton requires one call of manager's constructor
+    //TODO: use another singleton
+    new PostEffectManager();
+
+    PostEffect* postEffect = PostEffectManager::getSingleton().CreatePostEffect(PostEffectManager::PE_NULL, mWindow, mCamera->getViewport());
+    if(nullptr != postEffect)
+    {
+        postEffect->SetEnabled(true);
+    }
+#else
 	//Create compositor
 
 	Ogre::CompositorPtr compositor = Ogre::CompositorManager::getSingleton().create("compositor", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);

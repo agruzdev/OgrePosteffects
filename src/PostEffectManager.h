@@ -5,12 +5,13 @@
 #include <unordered_map>
 #include <memory>
 
-#include <OgreSingleton.h>
+#include <loki/Singleton.h>
+
 #include <OgreSharedPtr.h>
 
-#define DECLARE_REGISTRATION_FUNCTION(EffectName) void GlobalRegisterPostEffect_##EffectName();
-#define IMPLEMENT_REGISTRATION_FUNCTION(EffectName) void GlobalRegisterPostEffect_##EffectName()
-#define INVOKE_REGISTRATION_FUNCTION(EffectName) GlobalRegisterPostEffect_##EffectName();
+#define DECLARE_REGISTRATION_FUNCTION(EffectName) void GlobalRegisterPostEffect_##EffectName(PostEffectManager* manager);
+#define IMPLEMENT_REGISTRATION_FUNCTION(EffectName) void GlobalRegisterPostEffect_##EffectName(PostEffectManager* manager)
+#define INVOKE_REGISTRATION_FUNCTION(EffectName) GlobalRegisterPostEffect_##EffectName(this);
 
 namespace Ogre
 {
@@ -21,7 +22,7 @@ namespace Ogre
 class PostEffect;
 class PostEffectFactory;
 
-class PostEffectManager : public Ogre::Singleton<PostEffectManager>
+class PostEffectManager 
 {
 public:
     //Default post effects
@@ -67,41 +68,21 @@ public:
      */
     void UnregisterPostEffectFactory(Ogre::SharedPtr<PostEffectFactory> factory);
 
-    /** Override standard Singleton retrieval.
-    @remarks
-    Why do we do this? Well, it's because the Singleton
-    implementation is in a .h file, which means it gets compiled
-    into anybody who includes it. This is needed for the
-    Singleton template to work, but we actually only want it
-    compiled into the implementation of the class based on the
-    Singleton, not all of them. If we don't change this, we get
-    link errors when trying to use the Singleton-based class from
-    an outside dll.
-    @par
-    This method just delegates to the template version anyway,
-    but the implementation stays in this single compilation unit,
-    preventing link errors.
+    /**
+     *	Syntax sugar to fit OGRE style
+     */
+    static PostEffectManager& getSingleton();
+    /**
+    *	Syntax sugar to fit OGRE style
     */
-    static PostEffectManager& getSingleton(void);
-    /** Override standard Singleton retrieval.
-    @remarks
-    Why do we do this? Well, it's because the Singleton
-    implementation is in a .h file, which means it gets compiled
-    into anybody who includes it. This is needed for the
-    Singleton template to work, but we actually only want it
-    compiled into the implementation of the class based on the
-    Singleton, not all of them. If we don't change this, we get
-    link errors when trying to use the Singleton-based class from
-    an outside dll.
-    @par
-    This method just delegates to the template version anyway,
-    but the implementation stays in this single compilation unit,
-    preventing link errors.
-    */
-    static PostEffectManager* getSingletonPtr(void);
+    static PostEffectManager* getSingletonPtr();
 
+    //-------------------------------------------------------
+
+    friend struct Loki::CreateUsingNew<PostEffectManager>;
 };
 
+using sPostEffectsManager = Loki::SingletonHolder<PostEffectManager, Loki::CreateUsingNew>;
 
 
 #endif

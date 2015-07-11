@@ -95,5 +95,5 @@ const Ogre::String PostEffectNull::EFFECT_MATERIAL_NAME = "Material/PostEffectNu
 IMPLEMENT_REGISTRATION_FUNCTION(EffectNull)
 {
     Ogre::SharedPtr<PostEffectFactory> factory(new DefaultPostEffectFactory<PostEffectNull>(PostEffectManager::PE_NULL));
-    PostEffectManager::getSingleton().RegisterPostEffectFactory(factory);
+    manager->RegisterPostEffectFactory(factory);
 }

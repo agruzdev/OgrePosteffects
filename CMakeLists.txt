@@ -44,6 +44,14 @@ endif()
 include_directories(${Boost_INCLUDE_DIR})
 add_definitions(-DBOOST_ALL_NO_LIB)
 
+# Find Loki
+set(LOKI_INLCUDES "$ENV{LOKI_ROOT}/include")
+if(EXISTS "${LOKI_INLCUDES}/loki/LokiExport.h")
+    message(STATUS "Found LOKI: $ENV{LOKI_ROOT}")
+    include_directories(${LOKI_INLCUDES})
+else()
+    message(FATAL_ERROR "Could not find Loki")
+endif()
 
 file(GLOB_RECURSE all_sources src/*.cpp src/*.h)
 

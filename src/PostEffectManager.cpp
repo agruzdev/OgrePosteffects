@@ -18,16 +18,14 @@ void PostEffectManager::RegisterDefaultFactories()
 //-------------------------------------------------------
 const Ogre::String PostEffectManager::PE_NULL = "PostEffectNull";
 //-------------------------------------------------------
-template<> PostEffectManager* Ogre::Singleton<PostEffectManager>::msSingleton = 0;
-//-------------------------------------------------------
 PostEffectManager* PostEffectManager::getSingletonPtr(void)
 {
-    return msSingleton;
+    return &sPostEffectsManager::Instance();
 }
 //-------------------------------------------------------
 PostEffectManager& PostEffectManager::getSingleton(void)
 {
-    assert(msSingleton);  return (*msSingleton);
+    return sPostEffectsManager::Instance();
 }
 //-------------------------------------------------------
 PostEffectManager::PostEffectManager()

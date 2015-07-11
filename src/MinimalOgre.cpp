@@ -590,10 +590,6 @@ void MinimalOgre::SetupScene()
 
 #if 1
 
-    //Strange OGRE singleton requires one call of manager's constructor
-    //TODO: use another singleton
-    new PostEffectManager();
-
     PostEffect* postEffect = PostEffectManager::getSingleton().CreatePostEffect(PostEffectManager::PE_NULL, mWindow, mCamera->getViewport());
     if(nullptr != postEffect)
     {

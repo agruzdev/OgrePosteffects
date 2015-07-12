@@ -4,6 +4,17 @@ project(OgrePosteffects)
 
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
+if(MSVC)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
+    
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
+    #disable warnings appearing from OGRE
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4251") #dll-interface
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4512") #couldn't generate assignment operator
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4127") #conditional expression is constant
+    
+endif()
+
 #OGRE
 set(OGRE_ROOT "$ENV{OGRE_HOME}" CACHE FILEPATH "Path to ogre root folder")
 set(OGRE_BUILD "${OGRE_ROOT}/build" CACHE FILEPATH "Path to ogre build folder")

@@ -1,12 +1,14 @@
 
+#ifndef _POSTEFFECT_H_
+#define _POSTEFFECT_H_
+
+#include <OgrePrerequisites.h>
 #include <OgreStringInterface.h>
 #include <OgreResource.h>
 #include <OgreCompositor.h>
 #include <OgreSharedPtr.h>
 #include <OgreCompositorInstance.h>
-
-#ifndef _POSTEFFECT_H_
-#define _POSTEFFECT_H_
+#include <OgreMaterial.h>
 
 namespace Ogre
 {
@@ -18,7 +20,7 @@ class PostEffect : public Ogre::StringInterface, public Ogre::CompositorInstance
     static const Ogre::String DICTIONARY_NAME;
     static const Ogre::String COMPOSITOR_NAME_PREFIX;
     //-------------------------------------------------------
-    bool mInited;
+    bool mInited = false;
 
     Ogre::CompositorPtr mCompositor;
     Ogre::CompositorInstance* mCompositorInstance;
@@ -37,57 +39,107 @@ protected:
     const Ogre::String mName; ///< Unique name of the post effect type
     const size_t mId; ///< Unique number of the post effect instance
 
+    const Ogre::RenderWindow* mRenderWindow;
+
     //Helper method to generate unique names
     Ogre::String GetUniquePostfix() const;
 
     /**
-     * Create and setup post effect compositor
+     * Create and setup post effect compositor; Add to the end of the chain
      * @return true if the created compositor has any supported technique
      */	
-    bool CreateCompositor(const Ogre::RenderWindow* window, Ogre::CompositorChain* chain);
+    bool CreateCompositor(Ogre::CompositorChain* chain);
 
     //-------------------------------------------------------
 
     //Methods for implementing in the derived classes
-    //
+    
+    /**
+     * Create a material which will be used in the post effect compositor pass
+     * This method will be called only one time to create the material prototype during
+     * the first PostEffect instance initialization. The compositor instances 
+     * of the all PostEffect instances will be using copies of this material as
+     * it is implemented in the OGRE compositor
+     * 
+     * The created material's name should be equal to the name returned by GetEffectMaterialName()
+     */
+    virtual void CreateEffectMaterialPrototype() = 0;
+
+
     //Setup dictionary values depending on the specific PostEffect implementation
     virtual void DoCreateParametersDictionary(Ogre::ParamDictionary* dictionary) {}
-    //Effect specific implementations
-    virtual bool DoInit(const Ogre::RenderWindow* window) { return true; }
-    virtual void DoUpdate(Ogre::Real time) {}
+    /*
+     * Effects initialization
+     */
+    virtual void DoInit(Ogre::MaterialPtr & material) {}
+    //Updating the effect's material parameters on every frame
+    virtual void DoUpdate(Ogre::MaterialPtr & material, Ogre::Real time) {}
     //-------------------------------------------------------
 
 public:
+    /**
+     *	Create post effect instance
+     * @param name Effect's type name
+     * @param id unique id of this instance
+     */
     PostEffect(const Ogre::String & name, size_t id);
+    /**
+     *	Destroy effect instance
+     */
     ~PostEffect();
 
-    bool Init(const Ogre::RenderWindow* window, Ogre::CompositorChain* chain)
+    /**
+     *	Get material used for post effect full screen plane rendering in the compositor pass
+     *  It is supposed to get rendered scene image in the texture unit 0 and output processed image
+     */
+    virtual Ogre::String GetEffectMaterialName() const = 0;
+
+    /**
+     * Init effect's compositor
+     * Will be called by the post effects manager
+     */
+    void InitializeCompositor(const Ogre::RenderWindow* window, Ogre::CompositorChain* chain);
+
+    /**
+     * Init post effect's parameters; The method will be called delayed on the first update
+     * Call it manually if you want to init the effect at the specific time
+     * The material and compositor will be created when the Init() is called
+     */
+    void Init(Ogre::MaterialPtr & material)
     {
-        mInited = false;
-        if (true == DoInit(window))
+        if (false == mInited)
         {
-            if (true == CreateCompositor(window, chain))
-            {
-                mInited = true;
-            }
+            DoInit(material);
+            mInited = true;
         }
-        return mInited;
+        else
+        {
+            throw std::logic_error("PostEffect[Init]: second initialization attempt");
+        }
     }
 
-    void Update(Ogre::Real time)
+    /**
+     * Update the effects parameters
+     * The first call will cause calling Init() method 
+     */
+    void Update(Ogre::MaterialPtr & material, Ogre::Real time)
     {
-        if (true == mInited)
+        if (false == mInited)
         {
-            DoUpdate(time);
+            Init(material);
         }
+        DoUpdate(material, time);
     }
-
+    /**
+     * Enables/disables the post effect
+     */
     void SetEnabled(bool enabled)
     {
-        if (true == mInited && nullptr != mCompositorInstance)
+        if (nullptr == mCompositorInstance)
         {
-            mCompositorInstance->setEnabled(enabled);
+            throw std::runtime_error("PostEffect[SetEnabled]: the effect was not initialized");
         }
+        mCompositorInstance->setEnabled(enabled);
     }
 
     /**
@@ -100,10 +152,15 @@ public:
     }
 
     /**
-     *	Get material used for post effect full screen plane
-     *  It is supposed to get rendered scene image in the texture unit 0 and output processed image
+     * Is called on the every frame before rendering compositor pass
+     * Update effect here
      */
-    virtual Ogre::String GetEffectMaterialName() const = 0;
+    virtual void notifyMaterialRender(Ogre::uint32 pass_id, Ogre::MaterialPtr & mat) override
+    {
+        (void)pass_id;
+        Update(mat, 0.0f);
+    }
+
 };
 
 #endif

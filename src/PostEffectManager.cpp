@@ -13,10 +13,10 @@ DECLARE_REGISTRATION_FUNCTION(EffectNull)
 //-------------------------------------------------------
 void PostEffectManager::RegisterDefaultFactories()
 {
-    INVOKE_REGISTRATION_FUNCTION(EffectNull)
+    INVOKE_REGISTRATION_FUNCTION(EffectNull);
 }
 //-------------------------------------------------------
-const Ogre::String PostEffectManager::PE_NULL = "PostEffectNull";
+const Ogre::String PostEffectManager::PE_NULL = "PostEffect/Null";
 //-------------------------------------------------------
 PostEffectManager* PostEffectManager::getSingletonPtr(void)
 {
@@ -77,11 +77,8 @@ PostEffect* PostEffectManager::CreatePostEffect(const Ogre::String & effectType,
         {
             throw std::logic_error("PostEffectManager[CreatePostEffect]: The viewport has already compositors");
         }
-        
-        if (false == effect->Init(window, chain))
-        {
-            throw std::runtime_error("PostEffectManager[CreatePostEffect]: Failed to compile the effect");
-        }
+   
+        effect->InitializeCompositor(window, chain);
     }
     return effect;
 }

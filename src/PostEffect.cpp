@@ -25,7 +25,7 @@ void PostEffect::CreateParametersDictionary()
 }
 //-------------------------------------------------------
 PostEffect::PostEffect(const Ogre::String & name, size_t id):
-    mName(name), mId(id), mInited(false)
+    mName(name), mId(id)
 {
     CreateParametersDictionary();
 }
@@ -40,7 +40,7 @@ Ogre::String PostEffect::GetUniquePostfix() const
     return "PostEffect/" + mName + " / " + std::to_string(mId);
 }
 //-------------------------------------------------------
-bool PostEffect::CreateCompositor(const Ogre::RenderWindow* window, Ogre::CompositorChain* chain)
+bool PostEffect::CreateCompositor(Ogre::CompositorChain* chain)
 {
     mCompositor = Ogre::CompositorManager::getSingleton().create("Compositor/" + GetUniquePostfix(),
         Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
@@ -50,8 +50,8 @@ bool PostEffect::CreateCompositor(const Ogre::RenderWindow* window, Ogre::Compos
     {
         Ogre::CompositionTechnique::TextureDefinition* textureBg = technique->createTextureDefinition(rtName);
         //textureBg->scope = Ogre::CompositionTechnique::TS_GLOBAL;
-        textureBg->width = window->getWidth(); //same as render window
-        textureBg->height = window->getHeight(); //same as render window
+        textureBg->width = mRenderWindow->getWidth(); //same as render window
+        textureBg->height = mRenderWindow->getHeight(); //same as render window
         textureBg->formatList.push_back(Ogre::PixelFormat::PF_R8G8B8A8);
     }
 
@@ -76,4 +76,19 @@ bool PostEffect::CreateCompositor(const Ogre::RenderWindow* window, Ogre::Compos
         success = true;
     }
     return success;
+}
+//-------------------------------------------------------
+void PostEffect::InitializeCompositor(const Ogre::RenderWindow* window, Ogre::CompositorChain* chain)
+{
+    mRenderWindow = window;
+    //Create material for the specific effect if it was not created before (by another instance)
+    if (nullptr == Ogre::MaterialManager::getSingleton().getByName(GetEffectMaterialName()).get())
+    {
+        CreateEffectMaterialPrototype();
+    }
+    //Create compositor using the created material and add it to the end of the chain
+    if (false == CreateCompositor(chain))
+    {
+        throw std::runtime_error("PostEffect[InitializeCompositor]: compositor is not supported");
+    }
 }

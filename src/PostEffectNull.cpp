@@ -53,10 +53,8 @@ public:
         return "Material/PostEffect/" + GetUniquePostfix();
     }
 
-    virtual bool DoInit(const Ogre::RenderWindow* window) override
+    virtual void CreateEffectMaterialPrototype() override
     {
-        (void)window;
-
         Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().create(
             GetEffectMaterialName(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 
@@ -85,7 +83,6 @@ public:
             }
         }
         material->load();
-        return true;
     }
 };
 

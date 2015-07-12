@@ -27,6 +27,7 @@ class PostEffectManager
 public:
     //Default post effects
     static const Ogre::String PE_NULL;
+    static const Ogre::String PE_FADING;
     //-------------------------------------------------------
 
 private:

@@ -9,14 +9,17 @@
 
 
 DECLARE_REGISTRATION_FUNCTION(EffectNull)
+DECLARE_REGISTRATION_FUNCTION(EffectFading)
 
 //-------------------------------------------------------
 void PostEffectManager::RegisterDefaultFactories()
 {
     INVOKE_REGISTRATION_FUNCTION(EffectNull);
+    INVOKE_REGISTRATION_FUNCTION(EffectFading);
 }
 //-------------------------------------------------------
 const Ogre::String PostEffectManager::PE_NULL = "PostEffect/Null";
+const Ogre::String PostEffectManager::PE_FADING = "PostEffect/Fading";
 //-------------------------------------------------------
 PostEffectManager* PostEffectManager::getSingletonPtr(void)
 {

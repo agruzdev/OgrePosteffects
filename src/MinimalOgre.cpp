@@ -590,7 +590,8 @@ void MinimalOgre::SetupScene()
 
 #if 1
 
-    PostEffect* postEffect = PostEffectManager::getSingleton().CreatePostEffect(PostEffectManager::PE_NULL, mWindow, mCamera->getViewport());
+    //PostEffect* postEffect = PostEffectManager::getSingleton().CreatePostEffect(PostEffectManager::PE_NULL, mWindow, mCamera->getViewport());
+    PostEffect* postEffect = PostEffectManager::getSingleton().CreatePostEffect(PostEffectManager::PE_FADING, mWindow, mCamera->getViewport());
     if(nullptr != postEffect)
     {
         postEffect->SetEnabled(true);

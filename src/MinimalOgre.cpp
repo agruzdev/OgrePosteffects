@@ -38,8 +38,8 @@ This source file is part of the
 
 #include "Shaders.h"
 
-#include "PostEffectManager.h"
-#include "PostEffect.h"
+#include "effect/PostEffectManager.h"
+#include "effect/PostEffect.h"
 
 const Ogre::Real MinimalOgre::ROTATION_VELOCITY = static_cast<Ogre::Real>(100.0);
 const Ogre::Real MinimalOgre::ZOOM_VELOCITY = static_cast<Ogre::Real>(1000.0);
@@ -591,7 +591,7 @@ void MinimalOgre::SetupScene()
 #if 1
 
     //PostEffect* postEffect = PostEffectManager::getSingleton().CreatePostEffect(PostEffectManager::PE_NULL, mWindow, mCamera->getViewport());
-    PostEffect* postEffect = PostEffectManager::getSingleton().CreatePostEffect(PostEffectManager::PE_FADING, mWindow, mCamera->getViewport());
+    OgreEffect::PostEffect* postEffect = OgreEffect::PostEffectManager::getSingleton().CreatePostEffect(OgreEffect::PostEffectManager::PE_FADING, mWindow, mCamera->getViewport());
     if(nullptr != postEffect)
     {
         postEffect->setParameter("color", "1 0 0");

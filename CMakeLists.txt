@@ -64,12 +64,31 @@ else()
     message(FATAL_ERROR "Could not find Loki")
 endif()
 
+# Grab sources
+
 file(GLOB_RECURSE all_sources src/*.cpp src/*.h)
 
+foreach(f ${all_sources})
+    # Get the path of the file relative to ${CMAKE_HOME_DIRECTORY},
+    # then alter it (not compulsory)
+    file(RELATIVE_PATH SRCGR ${CMAKE_HOME_DIRECTORY} ${f})
+    set(SRCGR "${SRCGR}")
+
+    # Extract the folder, ie remove the filename part
+    string(REGEX REPLACE "(.*)(/[^/]*)$" "\\1" SRCGR ${SRCGR})
+
+    # Source_group expects \\ (double antislash), not / (slash)
+    string(REPLACE / \\ SRCGR ${SRCGR})
+    source_group("${SRCGR}" FILES ${f})
+endforeach()
+
+# defines
 add_definitions(-DDATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data")
  
+# create project
 add_executable(OgrePosteffects WIN32 ${all_sources})
 
+# include libs
 target_link_libraries(OgrePosteffects ${Boost_LIBRARIES})
 
 target_link_libraries(OgrePosteffects debug ${DEPENDS_ROOT}/lib/OIS_d.lib)
@@ -81,8 +100,8 @@ target_link_libraries(OgrePosteffects debug ${OGRE_LIBS_DIR}/Debug/OgreOverlay_d
 target_link_libraries(OgrePosteffects optimized ${OGRE_LIBS_DIR}/Release/OgreMain.lib)
 target_link_libraries(OgrePosteffects optimized ${OGRE_LIBS_DIR}/Release/OgreOverlay.lib)
 
+# Install project
 if(WIN32)
- 
 
 	install(FILES ${OGRE_BIN_DIR_REL}/OgreMain.dll
 		${OGRE_BIN_DIR_REL}/RenderSystem_GL.dll

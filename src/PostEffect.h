@@ -2,6 +2,7 @@
 #ifndef _POSTEFFECT_H_
 #define _POSTEFFECT_H_
 
+#include <OgreRoot.h>
 #include <OgrePrerequisites.h>
 #include <OgreStringInterface.h>
 #include <OgreResource.h>
@@ -13,6 +14,7 @@
 namespace Ogre
 {
     class RenderWindow;
+    class Timer;
 }
 
 class PostEffect : public Ogre::StringInterface, public Ogre::CompositorInstance::Listener
@@ -22,9 +24,13 @@ class PostEffect : public Ogre::StringInterface, public Ogre::CompositorInstance
     //-------------------------------------------------------
     bool mInited = false;
 
+    Ogre::Real mStartTime = -1;
+
     Ogre::CompositorPtr mCompositor;
     Ogre::CompositorInstance* mCompositorInstance;
     //-------------------------------------------------------
+    //Get current global time 
+    Ogre::Real GetTimeInSeconds() const;
 
     //Basic initialization; then calls DoCreateParametersDictionary()
     void CreateParametersDictionary();
@@ -40,6 +46,8 @@ protected:
     const size_t mId; ///< Unique number of the post effect instance
 
     const Ogre::RenderWindow* mRenderWindow;
+
+    Ogre::Timer* mTimer = Ogre::Root::getSingleton().getTimer();
 
     //Helper method to generate unique names
     Ogre::String GetUniquePostfix() const;
@@ -109,6 +117,7 @@ public:
     {
         if (false == mInited)
         {
+            //init the effect
             DoInit(material);
             mInited = true;
         }
@@ -121,6 +130,8 @@ public:
     /**
      * Update the effects parameters
      * The first call will cause calling Init() method 
+     * @param material pointer of the local copy of the effect material (unique for the every PostEffect instance)
+     * @param time time in seconds spent after the effect begin
      */
     void Update(Ogre::MaterialPtr & material, Ogre::Real time)
     {
@@ -158,7 +169,20 @@ public:
     virtual void notifyMaterialRender(Ogre::uint32 pass_id, Ogre::MaterialPtr & mat) override
     {
         (void)pass_id;
-        Update(mat, 0.0f);
+
+        //compute time from the beginning of the effect
+        Ogre::Real time = 0;
+        if (mStartTime < static_cast<Ogre::Real>(0))
+        {
+            mStartTime = GetTimeInSeconds();
+        }
+        else
+        {
+            time = GetTimeInSeconds() - mStartTime;
+        }
+
+        //update the effect
+        Update(mat, time);
     }
 
 };

@@ -9,6 +9,7 @@
 #include <OgreCompositionTargetPass.h>
 #include <OgreCompositionPass.h>
 #include <OgreCompositorChain.h>
+#include <OgreTimer.h>
 
 const Ogre::String PostEffect::DICTIONARY_NAME = "PostEffect";
 //-------------------------------------------------------
@@ -27,12 +28,17 @@ void PostEffect::CreateParametersDictionary()
 PostEffect::PostEffect(const Ogre::String & name, size_t id):
     mName(name), mId(id)
 {
-    
+    mTimer = Ogre::Root::getSingleton().getTimer();
 }
 //-------------------------------------------------------
 PostEffect::~PostEffect()
 {
-
+    //empty
+}
+//-------------------------------------------------------
+Ogre::Real PostEffect::GetTimeInSeconds() const
+{
+    return static_cast<Ogre::Real>(mTimer->getMilliseconds() / 1000.0);
 }
 //-------------------------------------------------------
 Ogre::String PostEffect::GetUniquePostfix() const

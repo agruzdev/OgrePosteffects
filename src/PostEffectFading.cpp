@@ -1,3 +1,4 @@
+#include <cmath>
 
 #include "PostEffectFactory.h"
 #include "PostEffectManager.h"
@@ -125,8 +126,10 @@ public:
         (void)material;
         (void)time;
 
+        Ogre::Real alpha = static_cast<Ogre::Real>(0.1 + std::fabs(std::sin(time)) * 0.5);
+
         auto fparams = material->getBestTechnique()->getPass(0)->getFragmentProgramParameters();
-        fparams->setNamedConstant("fadecolor", Ogre::Vector4(mColor[0], mColor[1], mColor[2], 0.5f));
+        fparams->setNamedConstant("fadecolor", Ogre::Vector4(mColor[0], mColor[1], mColor[2], alpha));
     }
 };
 

@@ -27,7 +27,7 @@ void PostEffect::CreateParametersDictionary()
 PostEffect::PostEffect(const Ogre::String & name, size_t id):
     mName(name), mId(id)
 {
-    CreateParametersDictionary();
+    
 }
 //-------------------------------------------------------
 PostEffect::~PostEffect()
@@ -78,9 +78,13 @@ bool PostEffect::CreateCompositor(Ogre::CompositorChain* chain)
     return success;
 }
 //-------------------------------------------------------
-void PostEffect::InitializeCompositor(const Ogre::RenderWindow* window, Ogre::CompositorChain* chain)
+void PostEffect::Prepare(const Ogre::RenderWindow* window, Ogre::CompositorChain* chain)
 {
     mRenderWindow = window;
+
+    //Setup parameters dictionary
+    CreateParametersDictionary();
+
     //Create material for the specific effect if it was not created before (by another instance)
     if (nullptr == Ogre::MaterialManager::getSingleton().getByName(GetEffectMaterialName()).get())
     {

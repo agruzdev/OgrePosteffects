@@ -81,7 +81,7 @@ PostEffect* PostEffectManager::CreatePostEffect(const Ogre::String & effectType,
             throw std::logic_error("PostEffectManager[CreatePostEffect]: The viewport has already compositors");
         }
    
-        effect->InitializeCompositor(window, chain);
+        effect->Prepare(window, chain);
     }
     return effect;
 }

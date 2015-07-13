@@ -98,7 +98,7 @@ public:
      * Init effect's compositor
      * Will be called by the post effects manager
      */
-    void InitializeCompositor(const Ogre::RenderWindow* window, Ogre::CompositorChain* chain);
+    void Prepare(const Ogre::RenderWindow* window, Ogre::CompositorChain* chain);
 
     /**
      * Init post effect's parameters; The method will be called delayed on the first update

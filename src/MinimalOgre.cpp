@@ -594,6 +594,8 @@ void MinimalOgre::SetupScene()
     PostEffect* postEffect = PostEffectManager::getSingleton().CreatePostEffect(PostEffectManager::PE_FADING, mWindow, mCamera->getViewport());
     if(nullptr != postEffect)
     {
+        postEffect->setParameter("color", "1 0 0");
+
         postEffect->SetEnabled(true);
     }
 #else

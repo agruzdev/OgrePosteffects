@@ -39,6 +39,24 @@ namespace
 
 class PostEffectFading : public PostEffect
 {
+    class CmdColourParameter : public Ogre::ParamCommand
+    {
+    public:
+        Ogre::String doGet(const void* target) const
+        {
+            return Ogre::StringConverter::toString(static_cast<const PostEffectFading*>(target)->mColor);
+        }
+        void doSet(void* target, const Ogre::String& val)
+        {
+            static_cast<PostEffectFading*>(target)->mColor = Ogre::StringConverter::parseColourValue(val);
+        }
+    };
+    //-------------------------------------------------------
+    static CmdColourParameter msColorParameter;
+    //-------------------------------------------------------
+
+    Ogre::ColourValue mColor;
+
 public:
     PostEffectFading(const Ogre::String& name, size_t id) :
         PostEffect(name, id)
@@ -89,11 +107,30 @@ public:
         material->load();
     }
 
+    virtual void DoCreateParametersDictionary(Ogre::ParamDictionary* dictionary) override
+    {
+        assert(nullptr != dictionary);
+        dictionary->addParameter(
+            Ogre::ParameterDef("color", "Color of the fading effect", Ogre::PT_COLOURVALUE), 
+            &msColorParameter);
+    }
+
     virtual void DoInit(Ogre::MaterialPtr & material)
     {
         (void)material;
     }
+
+    virtual void DoUpdate(Ogre::MaterialPtr & material, Ogre::Real time)
+    {
+        (void)material;
+        (void)time;
+
+        auto fparams = material->getBestTechnique()->getPass(0)->getFragmentProgramParameters();
+        fparams->setNamedConstant("fadecolor", Ogre::Vector4(mColor[0], mColor[1], mColor[2], 0.5f));
+    }
 };
+
+PostEffectFading::CmdColourParameter PostEffectFading::msColorParameter;
 
 IMPLEMENT_REGISTRATION_FUNCTION(EffectFading)
 {

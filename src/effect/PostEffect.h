@@ -1,3 +1,13 @@
+/**
+ * @file PostEffect.h
+ *
+ * Copyright (c) 2015 by Gruzdev Alexey
+ *
+ * Code covered by the MIT License
+ * The authors make no representations about the suitability of this software
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ */
+
 
 #ifndef _POSTEFFECT_H_
 #define _POSTEFFECT_H_

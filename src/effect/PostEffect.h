@@ -41,6 +41,10 @@ namespace OgreEffect
 
         Ogre::CompositorPtr mCompositor;
         Ogre::CompositorInstance* mCompositorInstance;
+
+        //name of the render target where the scene will be rendered before applying post effects
+        Ogre::String mSceneRtName;
+
         //-------------------------------------------------------
         //Get current global time 
         Ogre::Real GetTimeInSeconds() const;
@@ -69,7 +73,7 @@ namespace OgreEffect
          * Create and setup post effect compositor; Add to the end of the chain
          * @return true if the created compositor has any supported technique
          */
-        bool CreateCompositor(Ogre::CompositorChain* chain);
+        bool CreateCompositor(Ogre::Material* material, Ogre::CompositorChain* chain);
 
         //-------------------------------------------------------
 
@@ -83,8 +87,12 @@ namespace OgreEffect
          * it is implemented in the OGRE compositor
          *
          * The created material's name should be equal to the name returned by GetEffectMaterialName()
+         *
+         * @param sceneTextureName special name which is used to mark the texture unit states using
+         * the input texture of rendered scene. This name is not actual the compositor RT's name, but
+         * all occurrences of this name will be replaced by compositor pass' input
          */
-        virtual void CreateEffectMaterialPrototype() = 0;
+        virtual Ogre::Material* CreateEffectMaterialPrototype(const Ogre::String & sceneTextureName) = 0;
 
 
         //Setup dictionary values depending on the specific PostEffect implementation
@@ -111,7 +119,6 @@ namespace OgreEffect
 
         /**
          *	Get material used for post effect full screen plane rendering in the compositor pass
-         *  It is supposed to get rendered scene image in the texture unit 0 and output processed image
          */
         virtual Ogre::String GetEffectMaterialName() const = 0;
 

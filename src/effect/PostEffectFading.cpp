@@ -87,7 +87,7 @@ namespace OgreEffect
             return "Material/PostEffect/" + GetUniquePostfix();
         }
 
-        virtual void CreateEffectMaterialPrototype() override
+        virtual Ogre::Material* CreateEffectMaterialPrototype(const Ogre::String & sceneTextureName) override
         {
             Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().create(
                 GetEffectMaterialName(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
@@ -109,7 +109,7 @@ namespace OgreEffect
                     fprogram->setSource(Shader_GL_Fading_F);
                     pass->setFragmentProgram(fprogram->getName());
 
-                    auto unit0 = pass->createTextureUnitState();
+                    auto unit0 = pass->createTextureUnitState(sceneTextureName);
                     unit0->setTextureAddressingMode(Ogre::TextureUnitState::TAM_CLAMP);
                     unit0->setTextureFiltering(Ogre::TFO_NONE);
 
@@ -119,6 +119,7 @@ namespace OgreEffect
                 }
             }
             material->load();
+            return material.get();
         }
 
         virtual void DoCreateParametersDictionary(Ogre::ParamDictionary* dictionary) override

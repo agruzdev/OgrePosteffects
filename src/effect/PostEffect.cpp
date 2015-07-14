@@ -18,6 +18,9 @@
 #include <OgreCompositionTargetPass.h>
 #include <OgreCompositionPass.h>
 #include <OgreCompositorChain.h>
+#include <OgreTechnique.h>
+#include <OgreMaterial.h>
+#include <OgrePass.h>
 #include <OgreTimer.h>
 
 namespace OgreEffect
@@ -55,19 +58,19 @@ namespace OgreEffect
     //-------------------------------------------------------
     Ogre::String PostEffect::GetUniquePostfix() const
     {
-        return "PostEffect/" + mName + " / " + std::to_string(mId);
+        return "PostEffect/" + mName + "/" + std::to_string(mId);
     }
     //-------------------------------------------------------
-    bool PostEffect::CreateCompositor(Ogre::CompositorChain* chain)
+    bool PostEffect::CreateCompositor(Ogre::Material* material, Ogre::CompositorChain* chain)
     {
         mCompositor = Ogre::CompositorManager::getSingleton().create("Compositor/" + GetUniquePostfix(),
             Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
         Ogre::CompositionTechnique* technique = mCompositor->createTechnique();
 
-        const Ogre::String rtName = "Texture/RT/" + GetUniquePostfix();
         {
-            Ogre::CompositionTechnique::TextureDefinition* textureBg = technique->createTextureDefinition(rtName);
-            //textureBg->scope = Ogre::CompositionTechnique::TS_GLOBAL;
+            Ogre::CompositionTechnique::TextureDefinition* textureBg = technique->createTextureDefinition(mSceneRtName);
+            textureBg->name = mSceneRtName;
+            textureBg->scope = Ogre::CompositionTechnique::TS_GLOBAL;
             textureBg->width = mRenderWindow->getWidth(); //same as render window
             textureBg->height = mRenderWindow->getHeight(); //same as render window
             textureBg->formatList.push_back(Ogre::PixelFormat::PF_R8G8B8A8);
@@ -76,13 +79,26 @@ namespace OgreEffect
         {
             Ogre::CompositionTargetPass* target = technique->createTargetPass();
             target->setInputMode(Ogre::CompositionTargetPass::IM_PREVIOUS);
-            target->setOutputName(rtName);
+            target->setOutputName(mSceneRtName);
         }
         {
             Ogre::CompositionTargetPass* target = technique->getOutputTargetPass();
             target->setInputMode(Ogre::CompositionTargetPass::IM_NONE);
             Ogre::CompositionPass* pass = target->createPass();
-            pass->setInput(0, rtName);
+
+            //pass->setInput(0, mSceneRtName);
+            Ogre::Pass* matPass = material->getBestTechnique()->getPass(0);
+            auto it = matPass->getTextureUnitStateIterator();
+            for (size_t idx = 0; true == it.hasMoreElements(); ++idx)
+            {
+                auto texUnitState = it.getNext();
+                if (texUnitState->getTextureName() == mSceneRtName)
+                {
+                    pass->setInput(idx, mSceneRtName);
+                    break;
+                }
+            }
+
             pass->setMaterialName(GetEffectMaterialName());
         }
 
@@ -103,13 +119,17 @@ namespace OgreEffect
         //Setup parameters dictionary
         CreateParametersDictionary();
 
+        mSceneRtName = "Texture/RT/" + GetUniquePostfix();
+
         //Create material for the specific effect if it was not created before (by another instance)
-        if (nullptr == Ogre::MaterialManager::getSingleton().getByName(GetEffectMaterialName()).get())
+        Ogre::Material* effectMaterial = Ogre::MaterialManager::getSingleton().getByName(GetEffectMaterialName()).get();
+        if (nullptr == effectMaterial)
         {
-            CreateEffectMaterialPrototype();
+            effectMaterial = CreateEffectMaterialPrototype(mSceneRtName);
+            assert(nullptr != effectMaterial);
         }
         //Create compositor using the created material and add it to the end of the chain
-        if (false == CreateCompositor(chain))
+        if (false == CreateCompositor(effectMaterial, chain))
         {
             throw std::runtime_error("PostEffect[InitializeCompositor]: compositor is not supported");
         }

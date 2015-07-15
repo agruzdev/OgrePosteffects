@@ -43,8 +43,8 @@ namespace OgreEffect
     private:
         //Store materials of the effect shared between all instances
         //Will be initialized by the first effect instance
-        //ToDo: maybe using the static vector is not the best idea. Consider other solutions
-        static MaterialsVector msMaterialPrototypes;
+        //ToDo: maybe using the static field is not the best idea. Consider other solutions
+        static OGRE_HashMap<Ogre::String, MaterialsVector> msMaterialPrototypesMap;
         //-------------------------------------------------------
         
         bool mInited = false;
@@ -200,24 +200,7 @@ namespace OgreEffect
          * Is called on the every frame before rendering compositor pass
          * Update effect here
          */
-        virtual void notifyMaterialRender(Ogre::uint32 pass_id, Ogre::MaterialPtr & mat) override
-        {
-            (void)pass_id;
-
-            //compute time from the beginning of the effect
-            Ogre::Real time = 0;
-            if (mStartTime < static_cast<Ogre::Real>(0))
-            {
-                mStartTime = GetTimeInSeconds();
-            }
-            else
-            {
-                time = GetTimeInSeconds() - mStartTime;
-            }
-
-            //update the effect
-            Update(mat, time);
-        }
+        virtual void notifyMaterialRender(Ogre::uint32 pass_id, Ogre::MaterialPtr & mat) override;
 
     };
 

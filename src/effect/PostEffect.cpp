@@ -32,7 +32,7 @@ namespace OgreEffect
     const Ogre::String PostEffect::TEXTURE_MARKER_PREVIOUS = "TM_Previous";
     const Ogre::String PostEffect::TEXTURE_MARKER_SCENE = "TM_Scene";
 
-    PostEffect::MaterialsVector PostEffect::msMaterialPrototypes = {}; 
+    OGRE_HashMap<Ogre::String, PostEffect::MaterialsVector> PostEffect::msMaterialPrototypesMap = {};
 
     //-------------------------------------------------------
     void PostEffect::CreateParametersDictionary()
@@ -178,16 +178,38 @@ namespace OgreEffect
             effectMaterial = CreateEffectMaterialPrototype(mSceneRtName);
             assert(nullptr != effectMaterial);
         }*/
-        if (true == msMaterialPrototypes.empty())
+
+        //Check if materials for this effect type have been created already
+        auto & prototypes = msMaterialPrototypesMap[mName]; //get or create
+        if (true == prototypes.empty())
         {
-            msMaterialPrototypes = CreateEffectMaterialPrototypes();
-            assert(false == msMaterialPrototypes.empty());
+            prototypes = CreateEffectMaterialPrototypes();
+            assert(false == prototypes.empty());
         }
         //Create compositor using the created material and add it to the end of the chain
-        if (false == CreateCompositor(msMaterialPrototypes, chain))
+        if (false == CreateCompositor(prototypes, chain))
         {
             throw std::runtime_error("PostEffect[InitializeCompositor]: compositor is not supported");
         }
+    }
+    //-------------------------------------------------------
+    void PostEffect::notifyMaterialRender(Ogre::uint32 pass_id, Ogre::MaterialPtr & mat)
+    {
+        (void)pass_id;
+
+        //compute time from the beginning of the effect
+        Ogre::Real time = 0;
+        if (mStartTime < static_cast<Ogre::Real>(0))
+        {
+            mStartTime = GetTimeInSeconds();
+        }
+        else
+        {
+            time = GetTimeInSeconds() - mStartTime;
+        }
+
+        //update the effect
+        Update(mat, time);
     }
 
 } //namespace OgreEffect

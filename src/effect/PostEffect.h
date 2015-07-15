@@ -32,11 +32,22 @@ namespace OgreEffect
 
     class PostEffect : public Ogre::StringInterface, public Ogre::CompositorInstance::Listener
     {
-        static const Ogre::String DICTIONARY_NAME;
-        static const Ogre::String COMPOSITOR_NAME_PREFIX;
+    protected:
+        using MaterialsVector = Ogre::vector<Ogre::Material*>::type;
         //-------------------------------------------------------
-        bool mInited = false;
+        static const Ogre::String DICTIONARY_NAME; ///< name of the parameters dictionary for this class
 
+        static const Ogre::String TEXTURE_MARKER_SCENE; ///< name marker for attaching RT with rendered scene 
+        static const Ogre::String TEXTURE_MARKER_PREVIOUS; ///< name marker for attaching RT from the previous pass
+ 
+    private:
+        //Store materials of the effect shared between all instances
+        //Will be initialized by the first effect instance
+        //ToDo: maybe using the static vector is not the best idea. Consider other solutions
+        static MaterialsVector msMaterialPrototypes;
+        //-------------------------------------------------------
+        
+        bool mInited = false;
         Ogre::Real mStartTime = -1;
 
         Ogre::CompositorPtr mCompositor;
@@ -73,7 +84,7 @@ namespace OgreEffect
          * Create and setup post effect compositor; Add to the end of the chain
          * @return true if the created compositor has any supported technique
          */
-        bool CreateCompositor(Ogre::Material* material, Ogre::CompositorChain* chain);
+        bool CreateCompositor(const MaterialsVector & materials, Ogre::CompositorChain* chain);
 
         //-------------------------------------------------------
 
@@ -86,13 +97,16 @@ namespace OgreEffect
          * of the all PostEffect instances will be using copies of this material as
          * it is implemented in the OGRE compositor
          *
-         * The created material's name should be equal to the name returned by GetEffectMaterialName()
+         * Use the special name marker TEXTURE_MARKER_SCENE to attach compositor local RT with
+         * rendered scene to material's texture unit state. Can be used in any material
          *
-         * @param sceneTextureName special name which is used to mark the texture unit states using
-         * the input texture of rendered scene. This name is not actual the compositor RT's name, but
-         * all occurrences of this name will be replaced by compositor pass' input
+         * Use the name marker TEXTURE_MARKER_PREVIOUS to attach output of the previous material
+         * to the current material's texture unit state
+         *
+         * @return A vector of materials which will be transformed to compositor passes in the same order
+         * 
          */
-        virtual Ogre::Material* CreateEffectMaterialPrototype(const Ogre::String & sceneTextureName) = 0;
+        virtual MaterialsVector CreateEffectMaterialPrototypes() = 0;
 
 
         //Setup dictionary values depending on the specific PostEffect implementation
@@ -120,7 +134,7 @@ namespace OgreEffect
         /**
          *	Get material used for post effect full screen plane rendering in the compositor pass
          */
-        virtual Ogre::String GetEffectMaterialName() const = 0;
+        //virtual Ogre::String GetEffectMaterialName() const = 0;
 
         /**
          * Init effect's compositor

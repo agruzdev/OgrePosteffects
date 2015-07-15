@@ -9,6 +9,7 @@
 */
 
 #include <string>
+#include <array>
 
 #include "PostEffect.h"
 
@@ -27,6 +28,12 @@ namespace OgreEffect
 {
 
     const Ogre::String PostEffect::DICTIONARY_NAME = "PostEffect";
+
+    const Ogre::String PostEffect::TEXTURE_MARKER_PREVIOUS = "TM_Previous";
+    const Ogre::String PostEffect::TEXTURE_MARKER_SCENE = "TM_Scene";
+
+    PostEffect::MaterialsVector PostEffect::msMaterialPrototypes = {}; 
+
     //-------------------------------------------------------
     void PostEffect::CreateParametersDictionary()
     {
@@ -61,12 +68,13 @@ namespace OgreEffect
         return "PostEffect/" + mName + "/" + std::to_string(mId);
     }
     //-------------------------------------------------------
-    bool PostEffect::CreateCompositor(Ogre::Material* material, Ogre::CompositorChain* chain)
+    bool PostEffect::CreateCompositor(const MaterialsVector & materials, Ogre::CompositorChain* chain)
     {
         mCompositor = Ogre::CompositorManager::getSingleton().create("Compositor/" + GetUniquePostfix(),
             Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
         Ogre::CompositionTechnique* technique = mCompositor->createTechnique();
 
+        //Create a RT to render the scene into
         {
             Ogre::CompositionTechnique::TextureDefinition* textureBg = technique->createTextureDefinition(mSceneRtName);
             textureBg->name = mSceneRtName;
@@ -76,30 +84,71 @@ namespace OgreEffect
             textureBg->formatList.push_back(Ogre::PixelFormat::PF_R8G8B8A8);
         }
 
+        //if there are more than one material in the post effect, then create additional render targets 
+        std::array<Ogre::String, 2> rtPingPong = { "ping", "pong" };
+        int pingPongIdx = 0;
+        if (materials.size() > 1)
+        {
+            {
+                Ogre::CompositionTechnique::TextureDefinition* texture = technique->createTextureDefinition(rtPingPong[0]);
+                texture->width = mRenderWindow->getWidth(); //same as render window
+                texture->height = mRenderWindow->getHeight(); //same as render window
+                texture->formatList.push_back(Ogre::PixelFormat::PF_R8G8B8A8);
+            }
+            //will not be used in the case of 2 materials
+            if (materials.size() > 2)
+            {
+                Ogre::CompositionTechnique::TextureDefinition* textureBg = technique->createTextureDefinition(rtPingPong[1]);
+                textureBg->width = mRenderWindow->getWidth(); //same as render window
+                textureBg->height = mRenderWindow->getHeight(); //same as render window
+                textureBg->formatList.push_back(Ogre::PixelFormat::PF_R8G8B8A8);
+            }
+        }
+
         {
             Ogre::CompositionTargetPass* target = technique->createTargetPass();
             target->setInputMode(Ogre::CompositionTargetPass::IM_PREVIOUS);
             target->setOutputName(mSceneRtName);
         }
+
+        size_t materialsNumber = materials.size();
+        for (size_t matIdx = 0; matIdx < materialsNumber; ++matIdx)
         {
-            Ogre::CompositionTargetPass* target = technique->getOutputTargetPass();
+            Ogre::Material* material = materials[matIdx];
+
+            bool isOutputPass = (matIdx == materialsNumber - 1);
+            //Create target passes for all materials except the last one; it will be used in the output pass
+            Ogre::CompositionTargetPass* target = (false == isOutputPass) ?
+                technique->createTargetPass() : technique->getOutputTargetPass();
+
             target->setInputMode(Ogre::CompositionTargetPass::IM_NONE);
             Ogre::CompositionPass* pass = target->createPass();
 
-            //pass->setInput(0, mSceneRtName);
+            //Iterate all texture unit states to replace texture markers with the local compositor RTs
             Ogre::Pass* matPass = material->getBestTechnique()->getPass(0);
             auto it = matPass->getTextureUnitStateIterator();
-            for (size_t idx = 0; true == it.hasMoreElements(); ++idx)
+            for (size_t texIdx = 0; true == it.hasMoreElements(); ++texIdx)
             {
-                auto texUnitState = it.getNext();
-                if (texUnitState->getTextureName() == mSceneRtName)
+                auto textureName = it.getNext()->getTextureName();
+                if (TEXTURE_MARKER_SCENE == textureName)
                 {
-                    pass->setInput(idx, mSceneRtName);
-                    break;
+                    pass->setInput(texIdx, mSceneRtName);
+                }
+                else if (TEXTURE_MARKER_PREVIOUS == textureName)
+                {
+                    //attach one of render targets and change the index to the other one
+                    pass->setInput(texIdx, rtPingPong[pingPongIdx]);
+                    pingPongIdx = 1 - pingPongIdx;
                 }
             }
+            if (false == isOutputPass)
+            {
+                //pingPongIdx is already changed and point another texture
+                target->setOutputName(rtPingPong[pingPongIdx]);
+            }
 
-            pass->setMaterialName(GetEffectMaterialName());
+            //pass->setMaterialName(GetEffectMaterialName());
+            pass->setMaterialName(material->getName());
         }
 
         bool success = false;
@@ -122,14 +171,20 @@ namespace OgreEffect
         mSceneRtName = "Texture/RT/" + GetUniquePostfix();
 
         //Create material for the specific effect if it was not created before (by another instance)
+        /*
         Ogre::Material* effectMaterial = Ogre::MaterialManager::getSingleton().getByName(GetEffectMaterialName()).get();
         if (nullptr == effectMaterial)
         {
             effectMaterial = CreateEffectMaterialPrototype(mSceneRtName);
             assert(nullptr != effectMaterial);
+        }*/
+        if (true == msMaterialPrototypes.empty())
+        {
+            msMaterialPrototypes = CreateEffectMaterialPrototypes();
+            assert(false == msMaterialPrototypes.empty());
         }
         //Create compositor using the created material and add it to the end of the chain
-        if (false == CreateCompositor(effectMaterial, chain))
+        if (false == CreateCompositor(msMaterialPrototypes, chain))
         {
             throw std::runtime_error("PostEffect[InitializeCompositor]: compositor is not supported");
         }

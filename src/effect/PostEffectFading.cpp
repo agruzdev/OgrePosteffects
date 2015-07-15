@@ -69,7 +69,7 @@ namespace OgreEffect
         static CmdColourParameter msColorParameter;
         //-------------------------------------------------------
 
-        Ogre::ColourValue mColor;
+        Ogre::ColourValue mColor = Ogre::ColourValue(0.0, 0.0, 0.5);
 
     public:
         PostEffectFading(const Ogre::String& name, size_t id) :
@@ -116,7 +116,7 @@ namespace OgreEffect
 
                     auto fparams = pass->getFragmentProgramParameters();
                     fparams->setNamedConstant("texture", 0);
-                    fparams->setNamedConstant("fadecolor", Ogre::Vector4(0.0, 0.0, 1.0, 0.5));
+                    fparams->setNamedConstant("fadecolor", Ogre::Vector4(mColor[0], mColor[1], mColor[2], 0.5));
                 }
             }
             material->load();

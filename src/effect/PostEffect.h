@@ -35,11 +35,13 @@ namespace OgreEffect
     protected:
         using MaterialsVector = Ogre::vector<Ogre::Material*>::type;
         //-------------------------------------------------------
+
         static const Ogre::String DICTIONARY_NAME; ///< name of the parameters dictionary for this class
 
         static const Ogre::String TEXTURE_MARKER_SCENE; ///< name marker for attaching RT with rendered scene 
         static const Ogre::String TEXTURE_MARKER_PREVIOUS; ///< name marker for attaching RT from the previous pass
- 
+        //-------------------------------------------------------
+
     private:
         //Store materials of the effect shared between all instances
         //Will be initialized by the first effect instance
@@ -47,6 +49,13 @@ namespace OgreEffect
         static OGRE_HashMap<Ogre::String, MaterialsVector> msMaterialPrototypesMap;
         //-------------------------------------------------------
         
+        /**
+         * Create dummy textures with names of markers in order to
+         * the Material Manager will generate 'failed to find texture' errors
+         */
+        static void CreateMarkerDummies();
+        //-------------------------------------------------------
+
         bool mInited = false;
         Ogre::Real mStartTime = -1;
 
@@ -62,6 +71,7 @@ namespace OgreEffect
 
         //Basic initialization; then calls DoCreateParametersDictionary()
         void CreateParametersDictionary();
+
 
         PostEffect(const PostEffect&) = delete;
         PostEffect(const PostEffect&&) = delete;

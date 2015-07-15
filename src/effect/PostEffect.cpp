@@ -23,6 +23,7 @@
 #include <OgreMaterial.h>
 #include <OgrePass.h>
 #include <OgreTimer.h>
+#include <OgreTextureManager.h>
 
 namespace OgreEffect
 {
@@ -34,6 +35,19 @@ namespace OgreEffect
 
     OGRE_HashMap<Ogre::String, PostEffect::MaterialsVector> PostEffect::msMaterialPrototypesMap = {};
 
+    //-------------------------------------------------------
+    void PostEffect::CreateMarkerDummies()
+    {
+        for (const Ogre::String & name: { TEXTURE_MARKER_PREVIOUS, TEXTURE_MARKER_SCENE })
+        {
+            if (true == Ogre::TextureManager::getSingleton().getByName(name).isNull())
+            {
+                Ogre::TextureManager::getSingleton().createManual(name, 
+                    Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+                    Ogre::TEX_TYPE_2D, 1, 1, 0, Ogre::PF_L8);
+            }
+        }
+    }
     //-------------------------------------------------------
     void PostEffect::CreateParametersDictionary()
     {
@@ -51,6 +65,9 @@ namespace OgreEffect
         mName(name), mId(id)
     {
         mTimer = Ogre::Root::getSingleton().getTimer();
+
+        //create dummy textures if they were not created
+        CreateMarkerDummies();
     }
     //-------------------------------------------------------
     PostEffect::~PostEffect()

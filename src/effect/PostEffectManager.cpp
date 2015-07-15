@@ -81,24 +81,52 @@ namespace OgreEffect
         }
     }
     //-------------------------------------------------------
-    PostEffect* PostEffectManager::CreatePostEffect(const Ogre::String & effectType, Ogre::RenderWindow* window, Ogre::Viewport* viewport)
+    PostEffect* PostEffectManager::CreatePostEffectImpl(const Ogre::String & effectType, Ogre::RenderWindow* window, Ogre::CompositorChain* chain)
     {
         PostEffect* effect = nullptr;
         auto factIt = mFactories.find(effectType);
         if (factIt != mFactories.cend())
         {
             assert(nullptr != factIt->second.get());
+            //Create effect instance
             effect = factIt->second->Create();
-
-            Ogre::CompositorChain* chain = Ogre::CompositorManager::getSingleton().getCompositorChain(viewport);
-            if (chain->getNumCompositors() > 0)
-            {
-                throw std::logic_error("PostEffectManager[CreatePostEffect]: The viewport has already compositors");
-            }
-
+            //Prepare materials and compositor
             effect->Prepare(window, chain);
         }
         return effect;
+    }
+    //-------------------------------------------------------
+    PostEffect* PostEffectManager::CreatePostEffect(const Ogre::String & effectType, Ogre::RenderWindow* window, Ogre::Viewport* viewport)
+    {
+        Ogre::CompositorChain* chain = Ogre::CompositorManager::getSingleton().getCompositorChain(viewport); //returns not null
+        if (chain->getNumCompositors() > 0)
+        {
+            throw std::logic_error("PostEffectManager[CreatePostEffect]: The viewport has already compositors");
+        }
+        return CreatePostEffectImpl(effectType, window, chain);
+    }
+    //-------------------------------------------------------
+    Ogre::vector<PostEffect*>::type PostEffectManager::CreatePostEffectsChain(const Ogre::vector<Ogre::String>::type & effectTypes, Ogre::RenderWindow* window, Ogre::Viewport* viewport, bool enableAll /* = false */)
+    {
+        Ogre::CompositorChain* chain = Ogre::CompositorManager::getSingleton().getCompositorChain(viewport); //returns not null
+        if (chain->getNumCompositors() > 0)
+        {
+            throw std::logic_error("PostEffectManager[CreatePostEffect]: The viewport has already compositors");
+        }
+        Ogre::vector<PostEffect*>::type effects;
+        for (const auto & effectType : effectTypes)
+        {
+            PostEffect* effect = CreatePostEffectImpl(effectType, window, chain);
+            if (nullptr != effect)
+            {
+                if (true == enableAll)
+                {
+                    effect->SetEnabled(true);
+                }
+                effects.push_back(effect);
+            }
+        }
+        return effects;
     }
 
 }//namespace OgreEffect

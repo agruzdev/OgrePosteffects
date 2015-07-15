@@ -26,6 +26,7 @@ namespace Ogre
 {
     class RenderWindow;
     class Viewport;
+    class CompositorChain;
 }
 
 namespace OgreEffect
@@ -53,6 +54,8 @@ namespace OgreEffect
         FactoriesMap mFactories;
         //-------------------------------------------------------
 
+        PostEffect* CreatePostEffectImpl(const Ogre::String & effectType, Ogre::RenderWindow* window, Ogre::CompositorChain* chain);
+
         PostEffectManager(const PostEffectManager&) = delete;
         PostEffectManager(const PostEffectManager&&) = delete;
         PostEffectManager& operator=(const PostEffectManager&) = delete;
@@ -67,10 +70,19 @@ namespace OgreEffect
         /**
          *	Create single post effect
          *  It will be the only effect in the OGRE compositors chain
+         *
+         *  WARNING! The viewport should have no attached compositors
          */
         PostEffect* CreatePostEffect(const Ogre::String & effectType, Ogre::RenderWindow* window, Ogre::Viewport* viewport);
 
-
+        /**
+         *	Create a chain of post effects
+         *  The effects will be applying in the same order as their names are passed in the argument 'effectTypes'
+         *  The effects can be enabled/disabled individually
+         *
+         *  WARNING! The viewport should have no attached compositors
+         */
+        Ogre::vector<PostEffect*>::type CreatePostEffectsChain(const Ogre::vector<Ogre::String>::type & effectTypes, Ogre::RenderWindow* window, Ogre::Viewport* viewport, bool enableAll = false);
 
         /**
          * Register post effects factory to use the post effect in future

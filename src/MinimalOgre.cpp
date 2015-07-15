@@ -592,13 +592,19 @@ void MinimalOgre::SetupScene()
 
     //OgreEffect::PostEffect* postEffect = OgreEffect::PostEffectManager::getSingleton().CreatePostEffect(OgreEffect::PostEffectManager::PE_NULL, mWindow, mCamera->getViewport());
     //OgreEffect::PostEffect* postEffect = OgreEffect::PostEffectManager::getSingleton().CreatePostEffect(OgreEffect::PostEffectManager::PE_FADING, mWindow, mCamera->getViewport());
-    OgreEffect::PostEffect* postEffect = OgreEffect::PostEffectManager::getSingleton().CreatePostEffect(OgreEffect::PostEffectManager::PE_BLUR, mWindow, mCamera->getViewport());
-    if(nullptr != postEffect)
-    {
-        postEffect->setParameter("color", "1 0 0");
+    //OgreEffect::PostEffect* postEffect = OgreEffect::PostEffectManager::getSingleton().CreatePostEffect(OgreEffect::PostEffectManager::PE_BLUR, mWindow, mCamera->getViewport());
+    //if(nullptr != postEffect)
+    //{
+    //    postEffect->setParameter("color", "1 0 0");
+    //    postEffect->SetEnabled(true);
+    //}
 
-        postEffect->SetEnabled(true);
-    }
+    
+    auto postEffects = OgreEffect::PostEffectManager::getSingleton().CreatePostEffectsChain({ 
+        OgreEffect::PostEffectManager::PE_BLUR, 
+        OgreEffect::PostEffectManager::PE_FADING, 
+        }, mWindow, mCamera->getViewport(), true);
+
 #else
 	//Create compositor
 

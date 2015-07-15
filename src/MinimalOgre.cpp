@@ -590,8 +590,9 @@ void MinimalOgre::SetupScene()
 
 #if 1
 
-    //PostEffect* postEffect = PostEffectManager::getSingleton().CreatePostEffect(PostEffectManager::PE_NULL, mWindow, mCamera->getViewport());
-    OgreEffect::PostEffect* postEffect = OgreEffect::PostEffectManager::getSingleton().CreatePostEffect(OgreEffect::PostEffectManager::PE_FADING, mWindow, mCamera->getViewport());
+    //OgreEffect::PostEffect* postEffect = OgreEffect::PostEffectManager::getSingleton().CreatePostEffect(OgreEffect::PostEffectManager::PE_NULL, mWindow, mCamera->getViewport());
+    //OgreEffect::PostEffect* postEffect = OgreEffect::PostEffectManager::getSingleton().CreatePostEffect(OgreEffect::PostEffectManager::PE_FADING, mWindow, mCamera->getViewport());
+    OgreEffect::PostEffect* postEffect = OgreEffect::PostEffectManager::getSingleton().CreatePostEffect(OgreEffect::PostEffectManager::PE_BLUR, mWindow, mCamera->getViewport());
     if(nullptr != postEffect)
     {
         postEffect->setParameter("color", "1 0 0");

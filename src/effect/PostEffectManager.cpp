@@ -22,16 +22,19 @@ namespace OgreEffect
 
     DECLARE_REGISTRATION_FUNCTION(EffectNull)
     DECLARE_REGISTRATION_FUNCTION(EffectFading)
+    DECLARE_REGISTRATION_FUNCTION(EffectBlur)
 
     //-------------------------------------------------------
     void PostEffectManager::RegisterDefaultFactories()
     {
         INVOKE_REGISTRATION_FUNCTION(EffectNull);
         INVOKE_REGISTRATION_FUNCTION(EffectFading);
+        INVOKE_REGISTRATION_FUNCTION(EffectBlur);
     }
     //-------------------------------------------------------
     const Ogre::String PostEffectManager::PE_NULL = "PostEffect/Null";
     const Ogre::String PostEffectManager::PE_FADING = "PostEffect/Fading";
+    const Ogre::String PostEffectManager::PE_BLUR = "PostEffect/Blur";
     //-------------------------------------------------------
     PostEffectManager* PostEffectManager::getSingletonPtr(void)
     {

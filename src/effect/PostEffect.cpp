@@ -206,7 +206,8 @@ namespace OgreEffect
         //Create compositor using the created material and add it to the end of the chain
         if (false == CreateCompositor(prototypes, chain))
         {
-            throw std::runtime_error("PostEffect[InitializeCompositor]: compositor is not supported");
+            //throw std::runtime_error("PostEffect[InitializeCompositor]: compositor is not supported");
+            OGRE_EXCEPT(Ogre::Exception::ERR_INTERNAL_ERROR, "Compositor is not supported", "PostEffect[InitializeCompositor]");
         }
     }
     //-------------------------------------------------------

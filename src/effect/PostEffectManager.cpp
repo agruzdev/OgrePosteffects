@@ -101,7 +101,8 @@ namespace OgreEffect
         Ogre::CompositorChain* chain = Ogre::CompositorManager::getSingleton().getCompositorChain(viewport); //returns not null
         if (chain->getNumCompositors() > 0)
         {
-            throw std::logic_error("PostEffectManager[CreatePostEffect]: The viewport has already compositors");
+            //throw std::logic_error("PostEffectManager[CreatePostEffect]: The viewport has already compositors");
+            OGRE_EXCEPT(Ogre::Exception::ERR_INVALIDPARAMS, "The viewport has already compositors", "PostEffectManager[CreatePostEffect]");
         }
         return CreatePostEffectImpl(effectType, window, chain);
     }
@@ -111,7 +112,8 @@ namespace OgreEffect
         Ogre::CompositorChain* chain = Ogre::CompositorManager::getSingleton().getCompositorChain(viewport); //returns not null
         if (chain->getNumCompositors() > 0)
         {
-            throw std::logic_error("PostEffectManager[CreatePostEffect]: The viewport has already compositors");
+            //throw std::logic_error("PostEffectManager[CreatePostEffect]: The viewport has already compositors");
+            OGRE_EXCEPT(Ogre::Exception::ERR_INVALIDPARAMS, "The viewport has already compositors", "PostEffectManager[CreatePostEffect]");
         }
         Ogre::vector<PostEffect*>::type effects;
         for (const auto & effectType : effectTypes)

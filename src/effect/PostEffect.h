@@ -167,7 +167,8 @@ namespace OgreEffect
             }
             else
             {
-                throw std::logic_error("PostEffect[Init]: second initialization attempt");
+                //throw std::logic_error("PostEffect[Init]: second initialization attempt");
+                OGRE_EXCEPT(Ogre::Exception::ERR_INVALID_STATE, "Second initialization attempt", "PostEffect[Init]");
             }
         }
 
@@ -192,7 +193,8 @@ namespace OgreEffect
         {
             if (nullptr == mCompositorInstance)
             {
-                throw std::runtime_error("PostEffect[SetEnabled]: the effect was not initialized");
+                //throw std::runtime_error("PostEffect[SetEnabled]: the effect was not initialized");
+                OGRE_EXCEPT(Ogre::Exception::ERR_INVALID_STATE, "The effect was not initialized", "PostEffect[SetEnabled]");
             }
             mCompositorInstance->setEnabled(enabled);
         }

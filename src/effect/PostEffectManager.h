@@ -11,11 +11,11 @@
 #ifndef _POSTEFFECT_MANAGER_H_
 #define _POSTEFFECT_MANAGER_H_
 
-#include <unordered_map>
 #include <memory>
 
 #include <loki/Singleton.h>
 
+#include <OgrePrerequisites.h>
 #include <OgreSharedPtr.h>
 
 #define DECLARE_REGISTRATION_FUNCTION(EffectName) void GlobalRegisterPostEffect_##EffectName(PostEffectManager* manager);
@@ -45,13 +45,15 @@ namespace OgreEffect
         //-------------------------------------------------------
 
     private:
-        using FactoriesMap = std::unordered_map<Ogre::String, Ogre::SharedPtr<PostEffectFactory> >;
+        using FactoriesMap = OGRE_HashMap<Ogre::String, Ogre::SharedPtr<PostEffectFactory> >;
+        using EffectsVector = Ogre::vector<PostEffect*>::type;
         //-------------------------------------------------------
 
         void RegisterDefaultFactories();
         //-------------------------------------------------------
 
         FactoriesMap mFactories;
+        EffectsVector mEffects;
         //-------------------------------------------------------
 
         PostEffect* CreatePostEffectImpl(const Ogre::String & effectType, Ogre::RenderWindow* window, Ogre::CompositorChain* chain);
@@ -102,6 +104,11 @@ namespace OgreEffect
         *	Syntax sugar to fit OGRE style
         */
         static PostEffectManager* getSingletonPtr();
+
+        /**
+         *	Free all resources
+         */
+        void Shutdown();
 
         //-------------------------------------------------------
 

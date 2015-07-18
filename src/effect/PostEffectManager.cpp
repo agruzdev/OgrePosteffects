@@ -60,7 +60,20 @@ namespace OgreEffect
     //-------------------------------------------------------
     PostEffectManager::~PostEffectManager()
     {
-
+        Shutdown();
+    }
+    //-------------------------------------------------------
+    void PostEffectManager::Shutdown()
+    {
+        for (PostEffect* effect : mEffects)
+        {
+            auto factIt = mFactories.find(effect->GetName());
+            if (factIt != mFactories.cend())
+            {
+                factIt->second->Destroy(effect);
+            }
+        }
+        mEffects.clear();
     }
     //-------------------------------------------------------
     void PostEffectManager::RegisterPostEffectFactory(Ogre::SharedPtr<PostEffectFactory> factory)
@@ -96,6 +109,9 @@ namespace OgreEffect
             effect = factIt->second->Create();
             //Prepare materials and compositor
             effect->Prepare(window, chain);
+
+            //save the effect instance
+            mEffects.push_back(effect);
         }
         return effect;
     }

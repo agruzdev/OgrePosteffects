@@ -72,7 +72,7 @@ namespace OgreEffect
         }
         virtual void Destroy(PostEffect* effect) const override
         {
-            delete static_cast<EffectType*>(effect);
+            delete effect;
         }
     };
 

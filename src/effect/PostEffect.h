@@ -59,7 +59,7 @@ namespace OgreEffect
         bool mInited = false;
         Ogre::Real mStartTime = -1;
 
-        Ogre::CompositorPtr mCompositor;
+        //Ogre::CompositorPtr mCompositor;
         Ogre::CompositorInstance* mCompositorInstance;
 
         //name of the render target where the scene will be rendered before applying post effects
@@ -143,7 +143,7 @@ namespace OgreEffect
         /**
          *	Destroy effect instance
          */
-        ~PostEffect();
+        virtual ~PostEffect();
 
         /**
          *	Get material used for post effect full screen plane rendering in the compositor pass

@@ -87,9 +87,9 @@ namespace OgreEffect
     //-------------------------------------------------------
     bool PostEffect::CreateCompositor(const MaterialsVector & materials, Ogre::CompositorChain* chain)
     {
-        mCompositor = Ogre::CompositorManager::getSingleton().create("Compositor/" + GetUniquePostfix(),
+        Ogre::CompositorPtr compositor = Ogre::CompositorManager::getSingleton().create("Compositor/" + GetUniquePostfix(),
             Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-        Ogre::CompositionTechnique* technique = mCompositor->createTechnique();
+        Ogre::CompositionTechnique* technique = compositor->createTechnique();
 
         //Create a RT to render the scene into
         {
@@ -173,7 +173,7 @@ namespace OgreEffect
         }
 
         bool success = false;
-        mCompositorInstance = chain->addCompositor(mCompositor);
+        mCompositorInstance = chain->addCompositor(compositor);
         if (nullptr != mCompositorInstance)
         {
             mCompositorInstance->addListener(this);

@@ -73,6 +73,13 @@ namespace OgreEffect
         void CreateParametersDictionary();
 
 
+        /**
+        * Create and setup post effect compositor; Add to the end of the chain
+        * @return true if the created compositor has any supported technique
+        */
+        bool CreateCompositor(const MaterialsVector & materials, Ogre::CompositorChain* chain);
+
+
         PostEffect(const PostEffect&) = delete;
         PostEffect(const PostEffect&&) = delete;
         PostEffect& operator=(const PostEffect&) = delete;
@@ -89,12 +96,6 @@ namespace OgreEffect
 
         //Helper method to generate unique names
         Ogre::String GetUniquePostfix() const;
-
-        /**
-         * Create and setup post effect compositor; Add to the end of the chain
-         * @return true if the created compositor has any supported technique
-         */
-        bool CreateCompositor(const MaterialsVector & materials, Ogre::CompositorChain* chain);
 
         //-------------------------------------------------------
 

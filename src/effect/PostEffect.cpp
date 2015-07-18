@@ -153,6 +153,10 @@ namespace OgreEffect
                 }
                 else if (TEXTURE_MARKER_PREVIOUS == textureName)
                 {
+                    if (0 == matIdx)
+                    {
+                        OGRE_EXCEPT(Ogre::Exception::ERR_INTERNAL_ERROR, "Wrong texture marker. The PREVIOUS texture cant be used in the first material", "PostEffect[CreateCompositor]");
+                    }
                     //attach one of render targets and change the index to the other one
                     pass->setInput(texIdx, rtPingPong[pingPongIdx]);
                     pingPongIdx = 1 - pingPongIdx;
@@ -186,6 +190,8 @@ namespace OgreEffect
         CreateParametersDictionary();
 
         mSceneRtName = "Texture/RT/" + GetUniquePostfix();
+
+        DoPrepare();
 
         //Create material for the specific effect if it was not created before (by another instance)
         /*

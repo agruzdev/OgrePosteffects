@@ -129,6 +129,10 @@ namespace OgreEffect
         virtual void DoUpdate(Ogre::MaterialPtr & material, Ogre::Real time) {}
         //-------------------------------------------------------
 
+        //Initialize stuff before creating material 
+        //Will be called one time per instance
+        virtual void DoPrepare() {}
+
     public:
         /**
          *	Create post effect instance

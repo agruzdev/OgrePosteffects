@@ -24,12 +24,16 @@ namespace OgreEffect
     DECLARE_REGISTRATION_FUNCTION(EffectFading)
     DECLARE_REGISTRATION_FUNCTION(EffectBlur)
 
+    DECLARE_REGISTRATION_FUNCTION(EffectComplexTest)
+
     //-------------------------------------------------------
     void PostEffectManager::RegisterDefaultFactories()
     {
         INVOKE_REGISTRATION_FUNCTION(EffectNull);
         INVOKE_REGISTRATION_FUNCTION(EffectFading);
         INVOKE_REGISTRATION_FUNCTION(EffectBlur);
+
+        INVOKE_REGISTRATION_FUNCTION(EffectComplexTest);
     }
     //-------------------------------------------------------
     const Ogre::String PostEffectManager::PE_NULL = "PostEffect/Null";

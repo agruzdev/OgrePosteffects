@@ -593,6 +593,7 @@ void MinimalOgre::SetupScene()
     //OgreEffect::PostEffect* postEffect = OgreEffect::PostEffectManager::getSingleton().CreatePostEffect(OgreEffect::PostEffectManager::PE_NULL, mWindow, mCamera->getViewport());
     //OgreEffect::PostEffect* postEffect = OgreEffect::PostEffectManager::getSingleton().CreatePostEffect(OgreEffect::PostEffectManager::PE_FADING, mWindow, mCamera->getViewport());
     //OgreEffect::PostEffect* postEffect = OgreEffect::PostEffectManager::getSingleton().CreatePostEffect(OgreEffect::PostEffectManager::PE_BLUR, mWindow, mCamera->getViewport());
+    //OgreEffect::PostEffect* postEffect = OgreEffect::PostEffectManager::getSingleton().CreatePostEffect("ComplexTest", mWindow, mCamera->getViewport());
     //if(nullptr != postEffect)
     //{
     //    postEffect->setParameter("color", "1 0 0");
@@ -602,8 +603,11 @@ void MinimalOgre::SetupScene()
     
     auto postEffects = OgreEffect::PostEffectManager::getSingleton().CreatePostEffectsChain({ 
         OgreEffect::PostEffectManager::PE_BLUR, 
+        "ComplexTest",
         OgreEffect::PostEffectManager::PE_FADING, 
         }, mWindow, mCamera->getViewport(), true);
+    
+
 
 #else
 	//Create compositor

@@ -62,8 +62,9 @@ namespace OgreEffect
     }
     //-------------------------------------------------------
     PostEffect::PostEffect(const Ogre::String & name, size_t id) :
-        mName(name), mId(id)
+        mTypeName(name), mId(id)
     {
+        mName = GetUniquePostfix();
         mTimer = Ogre::Root::getSingleton().getTimer();
 
         //create dummy textures if they were not created
@@ -82,7 +83,7 @@ namespace OgreEffect
     //-------------------------------------------------------
     Ogre::String PostEffect::GetUniquePostfix() const
     {
-        return "PostEffect/" + mName + "/" + std::to_string(mId);
+        return "PostEffect/" + mTypeName + "/" + std::to_string(mId);
     }
     //-------------------------------------------------------
     bool PostEffect::CreateCompositor(const MaterialsVector & materials, Ogre::CompositorChain* chain)
@@ -203,7 +204,7 @@ namespace OgreEffect
         }*/
 
         //Check if materials for this effect type have been created already
-        auto & prototypes = msMaterialPrototypesMap[mName]; //get or create
+        auto & prototypes = msMaterialPrototypesMap[mTypeName]; //get or create
         if (true == prototypes.empty())
         {
             prototypes = CreateEffectMaterialPrototypes();

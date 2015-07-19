@@ -114,7 +114,7 @@ namespace OgreEffect
     //-------------------------------------------------------
     void PostEffectManager::RemoveImpl(PostEffect* effect)
     {
-        auto factIt = mFactories.find(effect->GetName());
+        auto factIt = mFactories.find(effect->GetTypeName());
         if (factIt != mFactories.cend())
         {
             factIt->second->Destroy(effect);

@@ -87,8 +87,9 @@ namespace OgreEffect
         //-------------------------------------------------------
 
     protected:
-        const Ogre::String mName; ///< Unique name of the post effect type
+        const Ogre::String mTypeName; ///< Unique name of the post effect type
         const size_t mId; ///< Unique number of the post effect instance
+        Ogre::String mName; ///< Unique name of the instance
 
         const Ogre::RenderWindow* mRenderWindow;
 
@@ -205,9 +206,14 @@ namespace OgreEffect
         }
 
         /**
-         *	Get effects name
+         *	Get effect type
          *  It is used as unique identificator for effects factory and manager
          */
+        const Ogre::String & GetTypeName() const
+        {
+            return mTypeName;
+        }
+
         const Ogre::String & GetName() const
         {
             return mName;

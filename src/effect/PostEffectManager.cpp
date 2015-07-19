@@ -34,8 +34,9 @@ namespace OgreEffect
         INVOKE_REGISTRATION_FUNCTION(EffectFading);
         INVOKE_REGISTRATION_FUNCTION(EffectBlur);
         INVOKE_REGISTRATION_FUNCTION(EffectBlackWhite);
-
+#ifdef TEST_EFFECTS
         INVOKE_REGISTRATION_FUNCTION(EffectComplexTest);
+#endif
     }
     //-------------------------------------------------------
     const Ogre::String PostEffectManager::PE_NULL = "PostEffect/Null";

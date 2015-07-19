@@ -36,6 +36,8 @@ set(DEPENDS_ROOT "${OGRE_ROOT}/Dependencies")
 include_directories("${DEPENDS_ROOT}/include")
 include_directories("${DEPENDS_ROOT}/include/OIS")
 
+# Options
+set(PostEffects_ENABLE_TEST_EFFECTS OFF CACHE BOOL "Include test post effects")
 
 # Find Boost
 set(Boost_USE_STATIC_LIBS TRUE)
@@ -84,6 +86,10 @@ endforeach()
 
 # defines
 add_definitions(-DDATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data")
+ 
+if(PostEffects_ENABLE_TEST_EFFECTS)
+    add_definitions(-DTEST_EFFECTS)
+endif()
  
 # create project
 add_executable(OgrePosteffects WIN32 ${all_sources})

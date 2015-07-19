@@ -640,7 +640,9 @@ void MinimalOgre::SetupPostEffects()
     auto postEffects = OgreEffect::PostEffectManager::getSingleton().CreatePostEffectsChain({
         OgreEffect::PostEffectManager::PE_BLACKWHITE,
         OgreEffect::PostEffectManager::PE_BLUR,
+#ifdef TEST_EFFECTS
         "ComplexTest",
+#endif
         OgreEffect::PostEffectManager::PE_FADING,
     }, mWindow, mCamera->getViewport(), true);
 

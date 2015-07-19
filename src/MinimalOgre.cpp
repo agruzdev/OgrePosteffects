@@ -56,8 +56,8 @@ MinimalOgre::MinimalOgre(void)
     mPluginsCfg(""),
     mTrayMgr(0),
     //mCameraMan(0),
-    mDetailsPanel(0),
-    mCursorWasVisible(false),
+    //mDetailsPanel(0),
+    //mCursorWasVisible(false),
     mShutDown(false),
     mInputManager(0),
     mMouse(0),
@@ -170,6 +170,8 @@ bool MinimalOgre::go(void)
     // Create the scene
     CreateMaterials();
 	SetupScene();
+    SetupPostEffects();
+
 //-------------------------------------------------------------------------------------
     //create FrameListener
     Ogre::LogManager::getSingletonPtr()->logMessage("*** Initializing OIS ***");
@@ -197,11 +199,24 @@ bool MinimalOgre::go(void)
  
     mInputContext.mKeyboard = mKeyboard;
     mInputContext.mMouse = mMouse;
+    
+
+    SetupEffectsGui();
+
+    mRoot->addFrameListener(this);
+//-------------------------------------------------------------------------------------
+    mRoot->startRendering();
+ 
+    return true;
+}
+ 
+void MinimalOgre::SetupEffectsGui()
+{
     mTrayMgr = new OgreBites::SdkTrayManager("InterfaceName", mWindow, mInputContext, this);
     mTrayMgr->showFrameStats(OgreBites::TL_BOTTOMLEFT);
     mTrayMgr->showLogo(OgreBites::TL_BOTTOMRIGHT);
-    //mTrayMgr->hideCursor();
- 
+    mTrayMgr->showCursor();
+    /*
     // create a params panel for displaying sample details
     Ogre::StringVector items;
     items.push_back("cam.pX");
@@ -215,19 +230,41 @@ bool MinimalOgre::go(void)
     items.push_back("");
     items.push_back("Filtering");
     items.push_back("Poly Mode");
- 
+
     mDetailsPanel = mTrayMgr->createParamsPanel(OgreBites::TL_NONE, "DetailsPanel", 200, items);
     mDetailsPanel->setParamValue(9, "Bilinear");
     mDetailsPanel->setParamValue(10, "Solid");
     mDetailsPanel->hide();
- 
-    mRoot->addFrameListener(this);
-//-------------------------------------------------------------------------------------
-    mRoot->startRendering();
- 
-    return true;
+    */
+
+    //Effects menu
+    static const size_t GUI_WIDTH = 175;
+
+    mTrayMgr->createLabel(OgreBites::TL_TOPLEFT, "PageButton", "PostEffects", GUI_WIDTH);
+    for (auto effectEntry : mPostEffects)
+    {
+        Ogre::String label = effectEntry.second->GetTypeName();
+        size_t lastSeparatorIdx = label.find_last_of('/');
+        if (std::string::npos != lastSeparatorIdx)
+        {
+            label = label.substr(lastSeparatorIdx + 1);
+        }
+        auto chBox = mTrayMgr->createCheckBox(OgreBites::TL_TOPLEFT, effectEntry.first, label, GUI_WIDTH);
+        chBox->setChecked(true);
+    }
 }
- 
+
+void MinimalOgre::checkBoxToggled(OgreBites::CheckBox* box)
+{
+    Ogre::String chBoxName = box->getName();
+    auto entryIt = mPostEffects.find(chBoxName);
+    if (entryIt != mPostEffects.end())
+    {
+        assert(nullptr != entryIt->second);
+        entryIt->second->SetEnabled(box->isChecked());
+    }
+}
+
 bool MinimalOgre::frameRenderingQueued(const Ogre::FrameEvent& evt)
 {
     if(mWindow->isClosed())
@@ -241,7 +278,7 @@ bool MinimalOgre::frameRenderingQueued(const Ogre::FrameEvent& evt)
     mMouse->capture();
  
     mTrayMgr->frameRenderingQueued(evt);
- 
+    /*
     if (!mTrayMgr->isDialogVisible())
     {
         //mCameraMan->frameRenderingQueued(evt);   // if dialog isn't up, then update the camera
@@ -256,6 +293,7 @@ bool MinimalOgre::frameRenderingQueued(const Ogre::FrameEvent& evt)
             mDetailsPanel->setParamValue(7, Ogre::StringConverter::toString(mCamera->getDerivedOrientation().z));
         }
     }
+    */
  
     return true;
 }
@@ -270,6 +308,7 @@ bool MinimalOgre::keyPressed( const OIS::KeyEvent &arg )
     }
     else if (arg.key == OIS::KC_G)   // toggle visibility of even rarer debugging details
     {
+        /*
         if (mDetailsPanel->getTrayLocation() == OgreBites::TL_NONE)
         {
             mTrayMgr->moveWidgetToTray(mDetailsPanel, OgreBites::TL_TOPRIGHT, 0);
@@ -279,14 +318,14 @@ bool MinimalOgre::keyPressed( const OIS::KeyEvent &arg )
         {
             mTrayMgr->removeWidgetFromTray(mDetailsPanel);
             mDetailsPanel->hide();
-        }
+        }*/
     }
     else if (arg.key == OIS::KC_T)   // cycle texture filtering mode
     {
+        /*
         Ogre::String newVal;
         Ogre::TextureFilterOptions tfo;
         unsigned int aniso;
- 
         switch (mDetailsPanel->getParamValue(9).asUTF8()[0])
         {
         case 'B':
@@ -309,10 +348,10 @@ bool MinimalOgre::keyPressed( const OIS::KeyEvent &arg )
             tfo = Ogre::TFO_BILINEAR;
             aniso = 1;
         }
- 
         Ogre::MaterialManager::getSingleton().setDefaultTextureFiltering(tfo);
         Ogre::MaterialManager::getSingleton().setDefaultAnisotropy(aniso);
         mDetailsPanel->setParamValue(9, newVal);
+        */
     }
     else if (arg.key == OIS::KC_R)   // cycle polygon rendering mode
     {
@@ -335,7 +374,7 @@ bool MinimalOgre::keyPressed( const OIS::KeyEvent &arg )
         }
  
         mCamera->setPolygonMode(pm);
-        mDetailsPanel->setParamValue(10, newVal);
+        //mDetailsPanel->setParamValue(10, newVal);
     }
     else if(arg.key == OIS::KC_F5)   // refresh all textures
     {
@@ -556,8 +595,6 @@ void MinimalOgre::CreateMaterials()
 void MinimalOgre::SetupScene()
 {
 	mOgreHead = mSceneMgr->createEntity("Head", "ogrehead.mesh");
-    //mOgreHead = mSceneMgr->createEntity(Ogre::SceneManager::PT_CUBE);
-    //mOgreHead->setMaterialName("Material/Copy");
 
 	Ogre::SceneNode* headNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
 	headNode->attachObject(mOgreHead);
@@ -583,13 +620,10 @@ void MinimalOgre::SetupScene()
     mBgTexturePlane->setMaterialName("Material/BG");
 
 	mSceneMgr->getRootSceneNode()->createChildSceneNode()->attachObject(mBgTexturePlane);
+}
 
-	//Create RT
-	//mRenderTarget = CreateRenderTarget("RT", bgCamera, mWindow->getWidth(), mWindow->getHeight());
-	//mRenderTarget->addListener(this);
-
-#if 1
-
+void MinimalOgre::SetupPostEffects()
+{
     //OgreEffect::PostEffect* postEffect = OgreEffect::PostEffectManager::getSingleton().CreatePostEffect(OgreEffect::PostEffectManager::PE_NULL, mWindow, mCamera->getViewport());
     //OgreEffect::PostEffect* postEffect = OgreEffect::PostEffectManager::getSingleton().CreatePostEffect(OgreEffect::PostEffectManager::PE_FADING, mWindow, mCamera->getViewport());
     //OgreEffect::PostEffect* postEffect = OgreEffect::PostEffectManager::getSingleton().CreatePostEffect(OgreEffect::PostEffectManager::PE_BLUR, mWindow, mCamera->getViewport());
@@ -600,55 +634,18 @@ void MinimalOgre::SetupScene()
     //    postEffect->SetEnabled(true);
     //}
 
-    
-    auto postEffects = OgreEffect::PostEffectManager::getSingleton().CreatePostEffectsChain({ 
-        OgreEffect::PostEffectManager::PE_BLUR, 
+
+    auto postEffects = OgreEffect::PostEffectManager::getSingleton().CreatePostEffectsChain({
+        OgreEffect::PostEffectManager::PE_BLUR,
         "ComplexTest",
-        OgreEffect::PostEffectManager::PE_FADING, 
-        }, mWindow, mCamera->getViewport(), true);
-    
+        OgreEffect::PostEffectManager::PE_FADING,
+    }, mWindow, mCamera->getViewport(), true);
 
+    for (OgreEffect::PostEffect* effect : postEffects)
+    {
+        mPostEffects["CheckBox/" + effect->GetName()] = effect;
+    }
 
-#else
-	//Create compositor
-
-	Ogre::CompositorPtr compositor = Ogre::CompositorManager::getSingleton().create("compositor", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-	Ogre::CompositionTechnique* technique = compositor->createTechnique();
-	
-	{
-		Ogre::CompositionTechnique::TextureDefinition* textureBg = technique->createTextureDefinition("RT");
-		textureBg->scope = Ogre::CompositionTechnique::TS_GLOBAL;
-		textureBg->width  = mWindow->getWidth(); //same as render window
-		textureBg->height = mWindow->getHeight(); //same as render window
-		textureBg->formatList.push_back(Ogre::PixelFormat::PF_R8G8B8A8);
-	}
-
-	{
-		Ogre::CompositionTargetPass* target = technique->createTargetPass();
-		//Ogre::CompositionPass* pass = target->createPass();
-		target->setInputMode(Ogre::CompositionTargetPass::IM_PREVIOUS);
-		target->setOutputName("RT");
-		//pass->setIdentifier(1);
-	}
-	{
-		Ogre::CompositionTargetPass* target = technique->getOutputTargetPass();
-		target->setInputMode(Ogre::CompositionTargetPass::IM_NONE);
-		Ogre::CompositionPass* pass = target->createPass();
-		pass->setInput(0, "RT");
-		pass->setMaterialName("Material/Copy");
-        //pass->setMaterialName("BaseWhite");
-		//pass->setInput(1);
-	}
-
-	Ogre::CompositorInstance* compInstance = Ogre::CompositorManager::getSingleton().addCompositor(mCamera->getViewport(), "compositor");
-	if (nullptr != compInstance)
-	{
-		compInstance->addListener(this);
-		compInstance->setEnabled(true);
-	}
-#endif
 }
-
-
 
  

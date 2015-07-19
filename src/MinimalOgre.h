@@ -42,6 +42,11 @@ This source file is part of the
 #include <OgreRenderTargetListener.h>
 #include <OgreCompositorInstance.h>
  
+namespace OgreEffect
+{
+    class PostEffect;
+}
+
 class MinimalOgre : public Ogre::FrameListener, 
 	public Ogre::WindowEventListener, public OIS::KeyListener, 
 	public OIS::MouseListener, OgreBites::SdkTrayListener,
@@ -72,8 +77,8 @@ protected:
 	OgreBites::InputContext mInputContext;
     OgreBites::SdkTrayManager* mTrayMgr;
     //OgreBites::SdkCameraMan* mCameraMan;      // basic camera controller
-    OgreBites::ParamsPanel* mDetailsPanel;    // sample details panel
-    bool mCursorWasVisible;                   // was cursor visible before dialog appeared
+    //OgreBites::ParamsPanel* mDetailsPanel;    // sample details panel
+    //bool mCursorWasVisible;                   // was cursor visible before dialog appeared
     bool mShutDown;
  
     // OIS Input devices
@@ -96,6 +101,9 @@ protected:
     virtual void windowResized(Ogre::RenderWindow* rw);
     virtual void windowClosed(Ogre::RenderWindow* rw);
 
+    // Ogre::TrayListener
+    virtual void checkBoxToggled(OgreBites::CheckBox* box);
+
 	// Ogre::RenderTargetListener
 	virtual void preRenderTargetUpdate(const Ogre::RenderTargetEvent& evt);
 	virtual void postRenderTargetUpdate(const Ogre::RenderTargetEvent& evt);
@@ -108,8 +116,13 @@ private:
 	Ogre::Entity* mOgreHead;
 	Ogre::Entity* mBgTexturePlane;
 
+    using PostEffectsMap = OGRE_HashMap<Ogre::String, OgreEffect::PostEffect*>;
+    PostEffectsMap mPostEffects;
+
+    void SetupEffectsGui();
 	void CreateMaterials();
 	void SetupScene();
+    void SetupPostEffects();
 };
  
 #endif // #ifndef __MinimalOgre_h_

@@ -1,5 +1,5 @@
 /**
-* @file PostEffectNull.h
+* @file PostEffectBlur.h
 *
 * Copyright (c) 2015 by Gruzdev Alexey
 *

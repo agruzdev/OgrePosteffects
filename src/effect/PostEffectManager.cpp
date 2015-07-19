@@ -67,11 +67,7 @@ namespace OgreEffect
     {
         for (PostEffect* effect : mEffects)
         {
-            auto factIt = mFactories.find(effect->GetName());
-            if (factIt != mFactories.cend())
-            {
-                factIt->second->Destroy(effect);
-            }
+            RemoveImpl(effect);
         }
         mEffects.clear();
     }
@@ -114,6 +110,30 @@ namespace OgreEffect
             mEffects.push_back(effect);
         }
         return effect;
+    }
+    //-------------------------------------------------------
+    void PostEffectManager::RemoveImpl(PostEffect* effect)
+    {
+        auto factIt = mFactories.find(effect->GetName());
+        if (factIt != mFactories.cend())
+        {
+            factIt->second->Destroy(effect);
+        }
+        else
+        {
+            OGRE_EXCEPT(Ogre::Exception::ERR_INTERNAL_ERROR, "Failed to find a factory matching the effect instance", "PostEffectManager[RemoveImpl]");
+        }
+    }
+    //-------------------------------------------------------
+    void PostEffectManager::Remove(PostEffect* effect)
+    {
+        auto effectIt = std::find(mEffects.begin(), mEffects.end(), effect);
+        if (mEffects.end() == effectIt)
+        {
+            OGRE_EXCEPT(Ogre::Exception::ERR_INTERNAL_ERROR, "Failed to find effect instance", "PostEffectManager[Remove]");
+        }
+        RemoveImpl(effect);
+        mEffects.erase(effectIt);
     }
     //-------------------------------------------------------
     PostEffect* PostEffectManager::CreatePostEffect(const Ogre::String & effectType, Ogre::RenderWindow* window, Ogre::Viewport* viewport)

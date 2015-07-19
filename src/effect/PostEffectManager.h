@@ -55,8 +55,10 @@ namespace OgreEffect
         FactoriesMap mFactories;
         EffectsVector mEffects;
         //-------------------------------------------------------
-
+        //Creating effect implementation
         PostEffect* CreatePostEffectImpl(const Ogre::String & effectType, Ogre::RenderWindow* window, Ogre::CompositorChain* chain);
+        //Removing effect implementation
+        void RemoveImpl(PostEffect* effect);
 
         PostEffectManager(const PostEffectManager&) = delete;
         PostEffectManager(const PostEffectManager&&) = delete;
@@ -85,6 +87,11 @@ namespace OgreEffect
          *  WARNING! The viewport should have no attached compositors
          */
         Ogre::vector<PostEffect*>::type CreatePostEffectsChain(const Ogre::vector<Ogre::String>::type & effectTypes, Ogre::RenderWindow* window, Ogre::Viewport* viewport, bool enableAll = false);
+
+        /**
+         *	Free resources and destroy the post effect
+         */
+        void Remove(PostEffect* effect);
 
         /**
          * Register post effects factory to use the post effect in future

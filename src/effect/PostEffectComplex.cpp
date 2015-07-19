@@ -88,24 +88,28 @@ namespace OgreEffect
     }
     //-------------------------------------------------------
     PostEffectComplex::~PostEffectComplex()
-    {
-        if (nullptr != mRootNode)
+    {     
+        if(nullptr != Ogre::Root::getSingletonPtr())
         {
-            mRootNode->removeAndDestroyAllChildren();
-        }
-        if (nullptr != mSceneManager && nullptr != mCamera)
-        {
-            if (nullptr != mCamera)
+            if (nullptr != mSceneManager)
             {
-                mSceneManager->destroyCamera(mCamera);
+                if (nullptr != mRenderTarget)
+                {
+                    mRenderTarget->removeAllListeners();
+                    mRenderTarget->removeAllViewports();
+                    Ogre::TextureManager::getSingleton().remove(mRtName);
+                }
+                if (nullptr != mCamera)
+                {
+                    mSceneManager->destroyCamera(mCamera);
+                }
+                if (nullptr != mRootNode)
+                {
+                    mRootNode->removeAndDestroyAllChildren();
+                }
+                Ogre::Root::getSingleton().destroySceneManager(mSceneManager);
             }
-            if (nullptr != mRenderTarget)
-            {
-                Ogre::TextureManager::getSingleton().remove(mRtName);
-            }
-            Ogre::Root::getSingleton().destroySceneManager(mSceneManager);
         }
-
     }
     //-------------------------------------------------------
     void PostEffectComplex::DoPrepare()

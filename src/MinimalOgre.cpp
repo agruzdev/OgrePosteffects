@@ -638,6 +638,7 @@ void MinimalOgre::SetupPostEffects()
 
 
     auto postEffects = OgreEffect::PostEffectManager::getSingleton().CreatePostEffectsChain({
+        OgreEffect::PostEffectManager::PE_BLACKWHITE,
         OgreEffect::PostEffectManager::PE_BLUR,
         "ComplexTest",
         OgreEffect::PostEffectManager::PE_FADING,

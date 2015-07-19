@@ -42,6 +42,7 @@ namespace OgreEffect
         static const Ogre::String PE_NULL;
         static const Ogre::String PE_FADING;
         static const Ogre::String PE_BLUR;
+        static const Ogre::String PE_BLACKWHITE;
         //-------------------------------------------------------
 
     private:

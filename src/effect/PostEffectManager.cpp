@@ -23,6 +23,7 @@ namespace OgreEffect
     DECLARE_REGISTRATION_FUNCTION(EffectNull)
     DECLARE_REGISTRATION_FUNCTION(EffectFading)
     DECLARE_REGISTRATION_FUNCTION(EffectBlur)
+    DECLARE_REGISTRATION_FUNCTION(EffectBlackWhite)
 
     DECLARE_REGISTRATION_FUNCTION(EffectComplexTest)
 
@@ -32,6 +33,7 @@ namespace OgreEffect
         INVOKE_REGISTRATION_FUNCTION(EffectNull);
         INVOKE_REGISTRATION_FUNCTION(EffectFading);
         INVOKE_REGISTRATION_FUNCTION(EffectBlur);
+        INVOKE_REGISTRATION_FUNCTION(EffectBlackWhite);
 
         INVOKE_REGISTRATION_FUNCTION(EffectComplexTest);
     }
@@ -39,6 +41,7 @@ namespace OgreEffect
     const Ogre::String PostEffectManager::PE_NULL = "PostEffect/Null";
     const Ogre::String PostEffectManager::PE_FADING = "PostEffect/Fading";
     const Ogre::String PostEffectManager::PE_BLUR = "PostEffect/Blur";
+    const Ogre::String PostEffectManager::PE_BLACKWHITE = "PostEffect/BlackWhite";
     //-------------------------------------------------------
     PostEffectManager* PostEffectManager::getSingletonPtr(void)
     {

@@ -355,6 +355,7 @@ bool MinimalOgre::keyPressed( const OIS::KeyEvent &arg )
     }
     else if (arg.key == OIS::KC_R)   // cycle polygon rendering mode
     {
+        /*
         Ogre::String newVal;
         Ogre::PolygonMode pm;
  
@@ -375,6 +376,7 @@ bool MinimalOgre::keyPressed( const OIS::KeyEvent &arg )
  
         mCamera->setPolygonMode(pm);
         //mDetailsPanel->setParamValue(10, newVal);
+        */
     }
     else if(arg.key == OIS::KC_F5)   // refresh all textures
     {

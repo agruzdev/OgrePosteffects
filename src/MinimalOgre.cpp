@@ -250,7 +250,7 @@ void MinimalOgre::SetupEffectsGui()
             label = label.substr(lastSeparatorIdx + 1);
         }
         auto chBox = mTrayMgr->createCheckBox(OgreBites::TL_TOPLEFT, effectEntry.first, label, GUI_WIDTH);
-        chBox->setChecked(true);
+        chBox->setChecked(false);
     }
 }
 

@@ -638,6 +638,9 @@ void MinimalOgre::SetupPostEffects()
 
 
     auto postEffects = OgreEffect::PostEffectManager::getSingleton().CreatePostEffectsChain({
+#ifdef TEST_EFFECTS
+        "DownsampleTest",
+#endif
         OgreEffect::PostEffectManager::PE_BLACKWHITE,
         OgreEffect::PostEffectManager::PE_BLUR,
 #ifdef TEST_EFFECTS

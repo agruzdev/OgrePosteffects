@@ -20,6 +20,7 @@
 #include <OgreSharedPtr.h>
 #include <OgreCompositorInstance.h>
 #include <OgreMaterial.h>
+#include <OgreCompositionTechnique.h>
 
 namespace Ogre
 {
@@ -32,6 +33,12 @@ namespace OgreEffect
 
     class PostEffect : public Ogre::StringInterface, public Ogre::CompositorInstance::Listener
     {
+        struct ManualOutputInfo
+        {
+            Ogre::String material; ///< material name 
+            Ogre::String texture; ///< texture definition name
+            Ogre::String marker; ///< temporal name of a texture marker
+        };
     protected:
         using MaterialsVector = Ogre::vector<Ogre::Material*>::type;
         //-------------------------------------------------------
@@ -49,6 +56,11 @@ namespace OgreEffect
         static OGRE_HashMap<Ogre::String, MaterialsVector> msMaterialPrototypesMap;
         //-------------------------------------------------------
         
+        //Small empty texture to use its name in texture unit states
+        static void CreateDummyTexture(const Ogre::String & name);
+        //Free resources
+        static void DestroyDummyTexture(const Ogre::String & name);
+
         /**
          * Create dummy textures with names of markers in order to
          * the Material Manager will generate 'failed to find texture' errors
@@ -61,9 +73,14 @@ namespace OgreEffect
 
         //Ogre::CompositorPtr mCompositor;
         Ogre::CompositorInstance* mCompositorInstance;
+        Ogre::CompositionTechnique* mCompositionTechnique;
 
         //name of the render target where the scene will be rendered before applying post effects
         Ogre::String mSceneRtName;
+
+        size_t mTexturesCounter = 0;
+        //save materials and texture definitions created for them with the help of CreateTextureDefinition
+        Ogre::vector<ManualOutputInfo>::type mManualTextures;
 
         //-------------------------------------------------------
         //Get current global time 
@@ -77,8 +94,12 @@ namespace OgreEffect
         * Create and setup post effect compositor; Add to the end of the chain
         * @return true if the created compositor has any supported technique
         */
-        bool CreateCompositor(const MaterialsVector & materials, Ogre::CompositorChain* chain);
+        void SetupCompositionTechnique(const MaterialsVector & materials, Ogre::CompositorChain* chain);
 
+        /**
+         *	Create a simple texture definition for the compositor technique 
+         */
+        Ogre::CompositionTechnique::TextureDefinition* CreateTextureDefinition(Ogre::String name, size_t width, size_t height, Ogre::PixelFormat format);
 
         PostEffect(const PostEffect&) = delete;
         PostEffect(const PostEffect&&) = delete;
@@ -98,6 +119,15 @@ namespace OgreEffect
         //Helper method to generate unique names
         Ogre::String GetUniquePostfix() const;
 
+        /**
+         * Create a new local texture for passing output from the specified material
+         * The name of the created texture should be used in another material explicitly 
+         * (Using market PREVIOUS is not allowed)
+         *
+         * @return name of the new texture
+         */
+        Ogre::String CreateOutputTexture(Ogre::String materialName, size_t width, size_t height, Ogre::PixelFormat format = Ogre::PF_R8G8B8A8);
+
         //-------------------------------------------------------
 
         //Methods for implementing in the derived classes
@@ -115,11 +145,13 @@ namespace OgreEffect
          * Use the name marker TEXTURE_MARKER_PREVIOUS to attach output of the previous material
          * to the current material's texture unit state
          *
+         * To create a nonlinear structure of processing or use low resolutions passes create 
+         * manual output textures with the help of CreateOutputTexture()
+         *
          * @return A vector of materials which will be transformed to compositor passes in the same order
          * 
          */
         virtual MaterialsVector CreateEffectMaterialPrototypes() = 0;
-
 
         //Setup dictionary values depending on the specific PostEffect implementation
         virtual void DoCreateParametersDictionary(Ogre::ParamDictionary* dictionary) {}

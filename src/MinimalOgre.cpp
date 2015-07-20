@@ -646,6 +646,7 @@ void MinimalOgre::SetupPostEffects()
 #ifdef TEST_EFFECTS
         "ComplexTest",
 #endif
+        OgreEffect::PostEffectManager::PE_BLOOM,
         OgreEffect::PostEffectManager::PE_FADING,
     }, mWindow, mCamera->getViewport(), true);
 

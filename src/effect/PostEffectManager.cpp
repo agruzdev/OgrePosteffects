@@ -25,7 +25,8 @@ namespace OgreEffect
     DECLARE_REGISTRATION_FUNCTION(EffectBlur)
     DECLARE_REGISTRATION_FUNCTION(EffectBlackWhite)
     DECLARE_REGISTRATION_FUNCTION(EffectBloom)
-
+    DECLARE_REGISTRATION_FUNCTION(EffectGodRays)
+    //test effects
     DECLARE_REGISTRATION_FUNCTION(EffectComplexTest)
     DECLARE_REGISTRATION_FUNCTION(EffectDownsampleTest)
 
@@ -37,6 +38,7 @@ namespace OgreEffect
         INVOKE_REGISTRATION_FUNCTION(EffectBlur);
         INVOKE_REGISTRATION_FUNCTION(EffectBlackWhite); 
         INVOKE_REGISTRATION_FUNCTION(EffectBloom);
+        INVOKE_REGISTRATION_FUNCTION(EffectGodRays);
 #ifdef TEST_EFFECTS
         INVOKE_REGISTRATION_FUNCTION(EffectComplexTest);
         INVOKE_REGISTRATION_FUNCTION(EffectDownsampleTest);
@@ -48,6 +50,7 @@ namespace OgreEffect
     const Ogre::String PostEffectManager::PE_BLUR = "PostEffect/Blur";
     const Ogre::String PostEffectManager::PE_BLACKWHITE = "PostEffect/BlackWhite";
     const Ogre::String PostEffectManager::PE_BLOOM = "PostEffect/Bloom";
+    const Ogre::String PostEffectManager::PE_GODRAYS = "PostEffect/GodRays";
     //-------------------------------------------------------
     PostEffectManager* PostEffectManager::getSingletonPtr(void)
     {

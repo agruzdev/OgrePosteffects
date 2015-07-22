@@ -44,7 +44,7 @@ namespace
         "}                                                                         \n"
         "";
 
-#define THRESHOLD "0.6"
+#define THRESHOLD "0.7"
     static const char Shader_GL_Threshold_F[] = ""
         "#version 120                                                                               \n"
         "                                                                                           \n"
@@ -239,6 +239,7 @@ namespace OgreEffect
                     fparams->setNamedAutoConstant("offset", Ogre::GpuProgramParameters::ACT_VIEWPORT_SIZE);
                 }
             }
+            auto outputHorz = CreateOutputTexture(materialHorz->getName(), mRenderWindow->getWidth() / 8, mRenderWindow->getHeight() / 8);
             //-------------------------------------------------------
             Ogre::MaterialPtr materialVert = Ogre::MaterialManager::getSingleton().create(
                 "Material/PostEffect/" + GetUniquePostfix() + "/Vert", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
@@ -257,7 +258,7 @@ namespace OgreEffect
                         Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, "glsl", Ogre::GPT_FRAGMENT_PROGRAM);
                     fprogram->setSource(Shader_GL_Blur_Vert_F);
 
-                    auto unit0 = pass->createTextureUnitState(TEXTURE_MARKER_PREVIOUS);
+                    auto unit0 = pass->createTextureUnitState(outputHorz);
                     unit0->setTextureAddressingMode(Ogre::TextureUnitState::TAM_CLAMP);
                     unit0->setTextureFiltering(Ogre::TFO_BILINEAR);
 
@@ -268,6 +269,7 @@ namespace OgreEffect
                     fparams->setNamedAutoConstant("offset", Ogre::GpuProgramParameters::ACT_VIEWPORT_SIZE);
                 }
             }
+            auto outputVert = CreateOutputTexture(materialVert->getName(), mRenderWindow->getWidth() / 8, mRenderWindow->getHeight() / 8);
             //-------------------------------------------------------
             Ogre::MaterialPtr materialBlend = Ogre::MaterialManager::getSingleton().create(
                 "Material/Blend/" + GetUniquePostfix(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
@@ -289,7 +291,7 @@ namespace OgreEffect
                     unit0->setTextureAddressingMode(Ogre::TextureUnitState::TAM_CLAMP);
                     unit0->setTextureFiltering(Ogre::TFO_NONE);
 
-                    auto unit1 = pass->createTextureUnitState(TEXTURE_MARKER_PREVIOUS);
+                    auto unit1 = pass->createTextureUnitState(outputVert);
                     unit1->setTextureAddressingMode(Ogre::TextureUnitState::TAM_CLAMP);
                     unit1->setTextureFiltering(Ogre::TFO_BILINEAR);
 

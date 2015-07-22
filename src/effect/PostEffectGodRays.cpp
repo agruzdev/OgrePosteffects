@@ -64,7 +64,7 @@ namespace
     static const char Shader_GL_Blur_F[] = ""
         "#version 120                                                                                       \n"
         "                                                                                                   \n"
-        "const int samples = 8;                                                                            \n"
+        "const int samples = 16;                                                                            \n"
         "const float exposure = 0.2 / float(samples);                                                       \n"
         "const float decay = 1.0;                                                                           \n"
         "const float density = 0.7;                                                                         \n"
@@ -101,7 +101,7 @@ namespace
         "{                                                                         \n"
         "    vec3 rgb = texture2D(texture, gl_TexCoord[0].st).rgb;                 \n"
         "    vec4 bloom = texture2D(texbloom, gl_TexCoord[0].st).rgba;             \n"
-        "    gl_FragColor = vec4(clamp(rgb + bloom.rgb, 0.0, 1.0), 1.0);           \n"
+        "    gl_FragColor = vec4(clamp(rgb + 0.7 * bloom.rgb, 0.0, 1.0), 1.0);           \n"
         "}                                                                         \n"
         "";
 }
@@ -111,6 +111,8 @@ namespace OgreEffect
 
     class PostEffectGodRays : public PostEffect
     {
+        Ogre::String blurName1;
+        Ogre::String blurName2;
     public:
         PostEffectGodRays(const Ogre::String& name, size_t id) :
             PostEffect(name, id)
@@ -206,6 +208,7 @@ namespace OgreEffect
 
             Ogre::MaterialPtr materialBlur = Ogre::MaterialManager::getSingleton().create(
                 "Material/PostEffect/" + GetUniquePostfix() + "/Blur", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+            blurName1 = materialBlur->getName();
             {
                 Ogre::Technique* techniqueGL = materialBlur->getTechnique(0);
                 Ogre::Pass* pass = techniqueGL->getPass(0);
@@ -235,6 +238,7 @@ namespace OgreEffect
             //-------------------------------------------------------
             Ogre::MaterialPtr materialBlur2 = Ogre::MaterialManager::getSingleton().create(
                 "Material/PostEffect/" + GetUniquePostfix() + "/Blur2", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+            blurName2 = materialBlur2->getName();
             {
                 Ogre::Technique* techniqueGL = materialBlur2->getTechnique(0);
                 Ogre::Pass* pass = techniqueGL->getPass(0);
@@ -295,6 +299,19 @@ namespace OgreEffect
 
             //-------------------------------------------------------
             return{ materialThreshold.get(), materialDownsample.get(), materialDownsample2.get(), materialBlur.get(), materialBlur2.get(), materialBlend.get() };
+        }
+        //-------------------------------------------------------
+        void DoUpdate(Ogre::MaterialPtr & material, Ogre::Real time)
+        {
+            //checking htis way because all materials are local copies of the created prototypes
+            if (Ogre::StringUtil::endsWith(material->getName(), blurName1) || Ogre::StringUtil::endsWith(material->getName(), blurName2))
+            {
+                Ogre::Vector2 sunPosition = Ogre::Vector2(0.05f, 0.05f);
+                sunPosition[0] += std::sin(time / 2.0f) * 0.05f;
+                auto pass = material->getBestTechnique()->getPass(0);
+                auto fparams = pass->getFragmentProgramParameters();
+                fparams->setNamedConstant("lightPosition", sunPosition);
+            }
         }
     };
 

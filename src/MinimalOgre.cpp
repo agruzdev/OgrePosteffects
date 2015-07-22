@@ -614,8 +614,8 @@ void MinimalOgre::SetupScene()
 	Ogre::Plane bgPlane = Ogre::Plane(Ogre::Vector3(0.0f, 0.0f, 1.0f), Ogre::Vector3(0.0f, 0.0f, -100.0f));
 	Ogre::vector<Ogre::Vector4>::type intersection;
 	mCamera->forwardIntersect(bgPlane, &intersection);
-    size_t width  = 2 * intersection[0].x;
-	size_t height = 2 * intersection[0].y;
+    size_t width  = 2 * std::ceil(intersection[0].x);
+	size_t height = 2 * std::ceil(intersection[0].y);
 
 	Ogre::MeshPtr bgPlaneMesh = Ogre::MeshManager::getSingleton().createPlane("Mesh/BgPlane",
 		Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, bgPlane, width, height);

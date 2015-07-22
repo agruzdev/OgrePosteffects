@@ -579,7 +579,9 @@ void MinimalOgre::CreateMaterials()
     {
         //load image
         Ogre::Image bgImage;
-        bgImage.load("background.jpg", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+        //bgImage.load("background.jpg", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+        //http://www.wallpaperup.com/176525/bridge_river_trees_landscape.html
+        bgImage.load("bridge.jpg", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
         Ogre::TexturePtr bgTexture = Ogre::TextureManager::getSingleton().loadImage("Texture/BG",
             Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, bgImage);
 

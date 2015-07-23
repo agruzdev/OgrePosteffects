@@ -30,6 +30,7 @@ include_directories("${OGRE_ROOT}/Samples/Common/include")
 include_directories("${OGRE_ROOT}/Components/Overlay/include")
 include_directories("${OGRE_ROOT}/Components/Volume/include")
 include_directories("${OGRE_ROOT}/Components/RTShaderSystem/include")
+include_directories("${OGRE_ROOT}/PlugIns/ParticleFX/include")
 
 #Dependencies
 set(DEPENDS_ROOT "${OGRE_ROOT}/Dependencies")
@@ -114,6 +115,7 @@ if(WIN32)
         ${OGRE_BIN_DIR_REL}/RenderSystem_Direct3D9.dll
         ${OGRE_BIN_DIR_REL}/OgreOverlay.dll
 		${OGRE_BIN_DIR_REL}/OIS.dll
+        ${OGRE_BIN_DIR_REL}/Plugin_ParticleFX.dll
 		DESTINATION "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release/"
 		CONFIGURATIONS Release 
 	)
@@ -123,6 +125,7 @@ if(WIN32)
         ${OGRE_BIN_DIR_DBG}/RenderSystem_Direct3D9_d.dll
         ${OGRE_BIN_DIR_DBG}/OgreOverlay_d.dll
 		${OGRE_BIN_DIR_DBG}/OIS_d.dll
+        ${OGRE_BIN_DIR_DBG}/Plugin_ParticleFX_d.dll
 		DESTINATION "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug/"
 		CONFIGURATIONS Debug
 	)

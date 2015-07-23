@@ -45,6 +45,8 @@ namespace OgreEffect
         static const Ogre::String PE_BLACKWHITE;
         static const Ogre::String PE_BLOOM;
         static const Ogre::String PE_GODRAYS;
+        //Complex post effects
+        static const Ogre::String PE_RAIN;
         //-------------------------------------------------------
 
     private:

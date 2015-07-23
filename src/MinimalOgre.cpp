@@ -651,6 +651,7 @@ void MinimalOgre::SetupPostEffects()
         OgreEffect::PostEffectManager::PE_BLOOM,
         OgreEffect::PostEffectManager::PE_GODRAYS,
         OgreEffect::PostEffectManager::PE_FADING,
+        OgreEffect::PostEffectManager::PE_RAIN,
     }, mWindow, mCamera->getViewport(), true);
 
     for (OgreEffect::PostEffect* effect : postEffects)

@@ -8,6 +8,8 @@
 * for any purpose. It is provided "as is" without express or implied warranty.
 */
 
+#include <utility>
+
 #include "PostEffectComplex.h"
 
 #include "PostEffectFactory.h"
@@ -55,7 +57,7 @@ namespace
         "void main()                                                               \n"
         "{                                                                         \n"
         "    float alpha = texture2D(dropTexture, gl_TexCoord[0].st).a;            \n"
-        "    gl_FragColor = vec4(1.0, 1.0, 1.0, alpha);                            \n"
+        "    gl_FragColor = vec4(0.8, 0.8, 0.85, alpha * 0.9);                     \n"
         "}                                                                         \n"
         "";
 }
@@ -135,15 +137,10 @@ namespace OgreEffect
             l->setPosition(20, 80, 50);
 
 
-            static const float DEPTH = 0.0f;
-            Ogre::Plane plane = Ogre::Plane(Ogre::Vector3(0.0f, 0.0f, 1.0f), Ogre::Vector3(0.0f, 0.0f, DEPTH));
-            Ogre::vector<Ogre::Vector4>::type intersection;
-            mCamera->forwardIntersect(plane, &intersection);
-            size_t width  = static_cast<size_t>(2 * std::ceil(intersection[0].x));
-            size_t height = static_cast<size_t>(2 * std::ceil(intersection[0].y));
+            
             
 
-            auto particlesSystem = mSceneManager->createParticleSystem(10000, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+            auto particlesSystem = mSceneManager->createParticleSystem(100000, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
             particlesSystem->setMaterialName(transMat->getName());
             particlesSystem->setDefaultDimensions(3, 20);
             particlesSystem->setCullIndividually(true);
@@ -152,18 +149,27 @@ namespace OgreEffect
             renderer->setParameter("billboard_type", "oriented_self");
             renderer->setParameter("rotation_type", "vertex");
             
-            auto emitter = particlesSystem->addEmitter("Box");
-            emitter->setDirection(Ogre::Vector3::NEGATIVE_UNIT_Y);
-            emitter->setEmissionRate(100);
-            emitter->setTimeToLive(15);
-            emitter->setEnabled(true);
-            emitter->setPosition(Ogre::Vector3::ZERO);
-            emitter->setParameter("width", Ogre::StringConverter::toString(width * 1.2f));
-            emitter->setParameter("height", "1");
-            emitter->setParameter("depth", "1");
-            emitter->setMinParticleVelocity(200.0f);
-            emitter->setMaxParticleVelocity(300.0f);
-            
+            for (auto depthAndRate : std::vector<std::pair<float, float> >
+                { { 200.0f, 5.0f }, { 100.0f, 120.0f }, { -100.0f, 150.0f }, { -400.0f, 200.0f }, { -800.0f, 250.0f }, { -1000.0f, 300.0f } })
+            {
+                Ogre::Plane plane = Ogre::Plane(Ogre::Vector3(0.0f, 0.0f, 1.0f), Ogre::Vector3(0.0f, 0.0f, depthAndRate.first));
+                Ogre::vector<Ogre::Vector4>::type intersection;
+                mCamera->forwardIntersect(plane, &intersection);
+                size_t width = static_cast<size_t>(2 * std::ceil(intersection[0].x));
+                size_t height = static_cast<size_t>(2 * std::ceil(intersection[0].y));
+
+                auto emitter = particlesSystem->addEmitter("Box");
+                emitter->setDirection(Ogre::Vector3::NEGATIVE_UNIT_Y);
+                emitter->setEmissionRate(depthAndRate.second);
+                emitter->setTimeToLive(15);
+                emitter->setEnabled(true);
+                emitter->setPosition(Ogre::Vector3(0.0f, height * 1.4f, depthAndRate.first));
+                emitter->setParameter("width", Ogre::StringConverter::toString(width * 1.5f));
+                emitter->setParameter("height", "1");
+                emitter->setParameter("depth", "1");
+                emitter->setMinParticleVelocity(200.0f);
+                emitter->setMaxParticleVelocity(300.0f);
+            }
 
             auto affector = particlesSystem->addAffector("LinearForce");
             affector->setParameter("force_vector", "0 -1 0");
@@ -175,7 +181,6 @@ namespace OgreEffect
             Ogre::Quaternion rotation;
             rotation.FromAngleAxis(Ogre::Radian(Ogre::Degree(10.0f)), Ogre::Vector3::UNIT_Z);
             node->setOrientation(rotation);
-            node->setPosition(0.0f, height * 1.3f, DEPTH);
         }
 
         void DoUpdateScene(Ogre::Real time) override

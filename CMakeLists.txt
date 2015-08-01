@@ -58,13 +58,22 @@ endif()
 include_directories(${Boost_INCLUDE_DIR})
 add_definitions(-DBOOST_ALL_NO_LIB)
 
+# macro for generating recursive directories
+macro(GENERATE_RECURSE_DIRS BASE_DIR OUT_LIST)
+    list(APPEND SUFFIXES "/*" "/*/*" "/*/*/*" "/*/*/*/*" "/*/*/*/*/*" "/*/*/*/*/*/*")
+    foreach(suffix ${SUFFIXES})
+        list(APPEND ${OUT_LIST} "${BASE_DIR}${suffix}")
+    endforeach()
+endmacro(GENERATE_RECURSE_DIRS)
+
 # Find Loki
-set(LOKI_INLCUDES "$ENV{LOKI_ROOT}/include")
-if(EXISTS "${LOKI_INLCUDES}/loki/LokiExport.h")
+generate_recurse_dirs("$ENV{LOKI_ROOT}" LOKI_FIND_DIRS)
+find_path(LOKI_INLCUDES NAMES "loki/LokiExport.h" PATHS ${LOKI_FIND_DIRS} NO_DEFAULT_PATH) 
+if(NOT  LOKI_INLCUDES MATCHES LOKI_INLCUDES-NOTFOUND)
     message(STATUS "Found LOKI: $ENV{LOKI_ROOT}")
     include_directories(${LOKI_INLCUDES})
 else()
-    message(FATAL_ERROR "Could not find Loki")
+    message(FATAL_ERROR "Could not find Loki in $ENV{LOKI_ROOT}/include")
 endif()
 
 # Grab sources

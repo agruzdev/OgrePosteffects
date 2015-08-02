@@ -22,6 +22,15 @@
 #include <OgreMaterial.h>
 #include <OgreCompositionTechnique.h>
 
+#if (OGRE_VERSION_MAJOR < 1) || (OGRE_VERSION_MAJOR == 1 && OGRE_VERSION_MINOR < 9)
+#error Only Ogre version 1.9.0 or higher is supported
+#endif
+
+#if OGRE_VERSION_PATCH < 1
+    //In OGRE SDK 1.9.0 is used name HashMap
+    #define OGRE_HashMap HashMap
+#endif
+
 namespace Ogre
 {
     class RenderWindow;

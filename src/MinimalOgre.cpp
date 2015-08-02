@@ -403,9 +403,11 @@ bool MinimalOgre::keyReleased( const OIS::KeyEvent &arg )
  
 bool MinimalOgre::mouseMoved( const OIS::MouseEvent &evt )
 {
+#if (OGRE_VERSION_MAJOR == 1) && (OGRE_VERSION_MINOR == 9) && (OGRE_VERSION_PATCH == 0)
+    if (mTrayMgr->injectMouseMove(evt)) return true;
+#else
     if (mTrayMgr->injectPointerMove(evt)) return true;
-    //mCameraMan->injectPointerMove(arg);
-
+#endif
     Ogre::SceneNode* headNode = mOgreHead->getParentSceneNode();
     if (nullptr != headNode)
     {
@@ -433,15 +435,21 @@ bool MinimalOgre::mouseMoved( const OIS::MouseEvent &evt )
  
 bool MinimalOgre::mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID id )
 {
+#if (OGRE_VERSION_MAJOR == 1) && (OGRE_VERSION_MINOR == 9) && (OGRE_VERSION_PATCH == 0)
+    if (mTrayMgr->injectMouseDown(arg, id)) return true;
+#else
 	if (mTrayMgr->injectPointerDown(arg, id)) return true;
-	//mCameraMan->injectPointerDown(arg, id);
+#endif
     return true;
 }
  
 bool MinimalOgre::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id )
 {
+#if (OGRE_VERSION_MAJOR == 1) && (OGRE_VERSION_MINOR == 9) && (OGRE_VERSION_PATCH == 0)
+    if (mTrayMgr->injectMouseUp(arg, id)) return true;
+#else
 	if (mTrayMgr->injectPointerUp(arg, id)) return true;
-	//mCameraMan->injectPointerUp(arg, id);
+#endif
     return true;
 }
  

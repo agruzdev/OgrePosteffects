@@ -15,27 +15,50 @@ if(MSVC)
     
 endif()
 
-#OGRE
+# macro for generating recursive directories
+macro(GENERATE_RECURSE_DIRS BASE_DIR OUT_LIST)
+    #list(APPEND SUFFIXES "/*" "/*/*" "/*/*/*" "/*/*/*/*" "/*/*/*/*/*" "/*/*/*/*/*/*")
+    list(APPEND SUFFIXES "/*" "/*/*" "/*/*/*" "/*/*/*/*")
+    foreach(suffix ${SUFFIXES})
+        list(APPEND ${OUT_LIST} "${BASE_DIR}${suffix}")
+    endforeach()
+endmacro(GENERATE_RECURSE_DIRS)
+
+# Fond OGRE
 set(OGRE_ROOT "$ENV{OGRE_HOME}" CACHE FILEPATH "Path to ogre root folder")
-set(OGRE_BUILD "${OGRE_ROOT}/build" CACHE FILEPATH "Path to ogre build folder")
-set(OGRE_INCLUDE_DIR "${OGRE_ROOT}/OgreMain/include" CACHE FILEPATH "Path to ogre includes")
-set(OGRE_LIBS_DIR "${OGRE_BUILD}/lib" CACHE FILEPATH "Path to odre libs")
-set(OGRE_BIN_DIR "${OGRE_BUILD}/bin" CACHE FILEPATH "Path to odre dlls")
-set(OGRE_BIN_DIR_REL "${OGRE_BIN_DIR}/release")
-set(OGRE_BIN_DIR_DBG "${OGRE_BIN_DIR}/debug")
+generate_recurse_dirs(${OGRE_ROOT} OGRE_SEARCH_DIRS)
+
+find_path(OGRE_INCLUDE_DIR Ogre.h PATHS ${OGRE_SEARCH_DIRS} NO_DEFAULT_PATH)
+find_path(OGRE_INCLUDE_BUILD_SETTINGS OgreBuildSettings.h PATHS ${OGRE_SEARCH_DIRS} NO_DEFAULT_PATH)
+find_path(OGRE_INCLUDE_TRAYS SdkTrays.h PATHS ${OGRE_SEARCH_DIRS} NO_DEFAULT_PATH)
+find_path(OGRE_INCLUDE_OVERLAY OgreOverlay.h PATHS ${OGRE_SEARCH_DIRS} NO_DEFAULT_PATH)
+find_path(OGRE_INCLUDE_RT_SHADERSYSTEM OgreRTShaderSystem.h PATHS ${OGRE_SEARCH_DIRS} NO_DEFAULT_PATH)
+find_path(OGRE_INCLUDE_PARTICLES_SYSTEM OgreParticleFXPlugin.h PATHS ${OGRE_SEARCH_DIRS} NO_DEFAULT_PATH)
+
+find_path(OGRE_LIBS_DIR_DBG OgreMain_d.lib PATHS ${OGRE_SEARCH_DIRS} NO_DEFAULT_PATH)
+find_path(OGRE_LIBS_DIR_REL OgreMain.lib PATHS ${OGRE_SEARCH_DIRS} NO_DEFAULT_PATH)
+
+find_path(OGRE_BIN_DIR_DBG OgreMain_d.dll PATHS ${OGRE_SEARCH_DIRS} NO_DEFAULT_PATH)
+find_path(OGRE_BIN_DIR_REL OgreMain.dll PATHS ${OGRE_SEARCH_DIRS} NO_DEFAULT_PATH)
+
 
 include_directories(${OGRE_INCLUDE_DIR})
-include_directories("${OGRE_BUILD}/include")
-include_directories("${OGRE_ROOT}/Samples/Common/include")
-include_directories("${OGRE_ROOT}/Components/Overlay/include")
-include_directories("${OGRE_ROOT}/Components/Volume/include")
-include_directories("${OGRE_ROOT}/Components/RTShaderSystem/include")
-include_directories("${OGRE_ROOT}/PlugIns/ParticleFX/include")
+include_directories(${OGRE_INCLUDE_BUILD_SETTINGS})
+include_directories(${OGRE_INCLUDE_TRAYS})
+include_directories(${OGRE_INCLUDE_OVERLAY})
+include_directories(${OGRE_INCLUDE_RT_SHADERSYSTEM})
+include_directories(${OGRE_INCLUDE_PARTICLES_SYSTEM})
 
-#Dependencies
-set(DEPENDS_ROOT "${OGRE_ROOT}/Dependencies")
-include_directories("${DEPENDS_ROOT}/include")
-include_directories("${DEPENDS_ROOT}/include/OIS")
+# Dependencies
+# OIS
+find_path(OGRE_INCLUDE_OIS OIS.h PATHS ${OGRE_SEARCH_DIRS} NO_DEFAULT_PATH)
+find_path(OGRE_OIS_LIB_DBG OIS_d.lib  PATHS ${OGRE_SEARCH_DIRS} NO_DEFAULT_PATH)
+find_path(OGRE_OIS_LIB_REL OIS.lib  PATHS ${OGRE_SEARCH_DIRS} NO_DEFAULT_PATH)
+find_path(OGRE_OIS_BIN_DBG OIS_d.dll  PATHS ${OGRE_SEARCH_DIRS} NO_DEFAULT_PATH)
+find_path(OGRE_OIS_BIN_REL OIS.dll  PATHS ${OGRE_SEARCH_DIRS} NO_DEFAULT_PATH)
+
+include_directories(${OGRE_INCLUDE_OIS})
+
 
 # Options
 set(PostEffects_ENABLE_TEST_EFFECTS OFF CACHE BOOL "Include test post effects")
@@ -57,14 +80,6 @@ endif()
 # Set up referencing of Boost
 include_directories(${Boost_INCLUDE_DIR})
 add_definitions(-DBOOST_ALL_NO_LIB)
-
-# macro for generating recursive directories
-macro(GENERATE_RECURSE_DIRS BASE_DIR OUT_LIST)
-    list(APPEND SUFFIXES "/*" "/*/*" "/*/*/*" "/*/*/*/*" "/*/*/*/*/*" "/*/*/*/*/*/*")
-    foreach(suffix ${SUFFIXES})
-        list(APPEND ${OUT_LIST} "${BASE_DIR}${suffix}")
-    endforeach()
-endmacro(GENERATE_RECURSE_DIRS)
 
 # Find Loki
 generate_recurse_dirs("$ENV{LOKI_ROOT}" LOKI_FIND_DIRS)
@@ -107,14 +122,14 @@ add_executable(OgrePosteffects WIN32 ${all_sources})
 # include libs
 target_link_libraries(OgrePosteffects ${Boost_LIBRARIES})
 
-target_link_libraries(OgrePosteffects debug ${DEPENDS_ROOT}/lib/OIS_d.lib)
-target_link_libraries(OgrePosteffects optimized  ${DEPENDS_ROOT}/lib/OIS.lib)
+target_link_libraries(OgrePosteffects debug ${OGRE_OIS_LIB_DBG}/OIS_d.lib)
+target_link_libraries(OgrePosteffects optimized  ${OGRE_OIS_LIB_REL}/OIS.lib)
  
-target_link_libraries(OgrePosteffects debug ${OGRE_LIBS_DIR}/Debug/OgreMain_d.lib)
-target_link_libraries(OgrePosteffects debug ${OGRE_LIBS_DIR}/Debug/OgreOverlay_d.lib)
+target_link_libraries(OgrePosteffects debug ${OGRE_LIBS_DIR_DBG}/OgreMain_d.lib)
+target_link_libraries(OgrePosteffects debug ${OGRE_LIBS_DIR_DBG}/OgreOverlay_d.lib)
 
-target_link_libraries(OgrePosteffects optimized ${OGRE_LIBS_DIR}/Release/OgreMain.lib)
-target_link_libraries(OgrePosteffects optimized ${OGRE_LIBS_DIR}/Release/OgreOverlay.lib)
+target_link_libraries(OgrePosteffects optimized ${OGRE_LIBS_DIR_REL}/OgreMain.lib)
+target_link_libraries(OgrePosteffects optimized ${OGRE_LIBS_DIR_REL}/OgreOverlay.lib)
 
 # Install project
 if(WIN32)
@@ -123,7 +138,7 @@ if(WIN32)
 		${OGRE_BIN_DIR_REL}/RenderSystem_GL.dll
         ${OGRE_BIN_DIR_REL}/RenderSystem_Direct3D9.dll
         ${OGRE_BIN_DIR_REL}/OgreOverlay.dll
-		${OGRE_BIN_DIR_REL}/OIS.dll
+		${OGRE_OIS_BIN_REL}/OIS.dll
         ${OGRE_BIN_DIR_REL}/Plugin_ParticleFX.dll
 		DESTINATION "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release/"
 		CONFIGURATIONS Release 
@@ -133,7 +148,7 @@ if(WIN32)
 		${OGRE_BIN_DIR_DBG}/RenderSystem_GL_d.dll
         ${OGRE_BIN_DIR_DBG}/RenderSystem_Direct3D9_d.dll
         ${OGRE_BIN_DIR_DBG}/OgreOverlay_d.dll
-		${OGRE_BIN_DIR_DBG}/OIS_d.dll
+		${OGRE_OIS_BIN_DBG}/OIS_d.dll
         ${OGRE_BIN_DIR_DBG}/Plugin_ParticleFX_d.dll
 		DESTINATION "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug/"
 		CONFIGURATIONS Debug
